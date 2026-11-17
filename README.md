@@ -40,10 +40,10 @@ contenido es ficticio: dominios `.example`, «Banco Ejemplo» y cifras inventada
 ## Flujo
 
 Girar (3,8 s) → casilla revelada (1,6 s) → **tres retos sin límite de tiempo**
-(cada uno: reto → resultado con la explicación) → premio con la puntuación
-(«Acertaste 2 de 3», «¡PLENO!» si son tres) → vuelve al inicio. Si el visitante
-no toca nada en un resultado, avanza solo a los 20 s; tras 60 s de inactividad
-la página vuelve al inicio.
+(cada uno: reto → resultado con la explicación) → cierre con un comentario según
+la puntuación y el consejo del día → vuelve al inicio. Si el visitante no toca
+nada en un resultado, avanza solo a los 20 s; tras 60 s de inactividad la página
+vuelve al inicio.
 
 ## Controles del operador
 
