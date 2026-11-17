@@ -150,6 +150,11 @@
   .ch-icon{ width:74px; height:74px; color:var(--cyan); flex:0 0 auto; }
   .ch-icon svg{ width:100%; height:100%; }
   .ch-title{ font-size:46px; font-weight:800; letter-spacing:1px; }
+  .round-tag{
+    margin-left:auto; font-size:28px; font-weight:700;
+    letter-spacing:2px; color:var(--text-2); text-transform:uppercase;
+  }
+  .round-tag b{ color:var(--cyan); }
 
   .timer{ margin-left:auto; display:flex; align-items:center; gap:20px; width:560px; }
   .timer-bar{
@@ -629,7 +634,7 @@
 <div id="operator">
   <h3>PANEL DEL OPERADOR</h3>
   <div class="row"><span>Participantes</span><b id="op-p">0</b></div>
-  <div class="row"><span>Aciertos</span><b id="op-a">0</b></div>
+  <div class="row"><span>Respuestas correctas</span><b id="op-a">0</b></div>
   <button id="op-reset">Reiniciar contador del día</button>
   <div class="hint">R / Esc reiniciar · M sonido · N siguiente · O panel</div>
 </div>
@@ -1019,6 +1024,8 @@
   var revealName = document.getElementById("reveal-name");
   var revealIcon = document.getElementById("reveal-icon");
 
+  var RETOS_POR_RONDA = 3;
+
   var state = {
     mode: "idle",        // idle | spinning | reveal | challenge | result | hack | hack-result | prize
     casilla: null,
@@ -1037,6 +1044,7 @@
     hackVista: null,
     hackElegido: -1,
     hackTimeout: false,
+    ronda: { total: 0, hechos: 0, aciertos: 0 },
     lock: 0,
     lastAction: Date.now(),
     counters: { p: 0, a: 0 },
@@ -1280,12 +1288,21 @@
   /* ============================================================
      PANTALLA DE RETO
      ============================================================ */
-  function headHTML(c) {
+  function headHTML(c, esResultado) {
+    var n = 0;
+    if (state.ronda.total > 1) {
+      n = esResultado ? state.ronda.hechos : state.ronda.hechos + 1;
+      n = Math.min(n, state.ronda.total);
+    }
     return '<div class="ch-icon">' + ICON[c.icono] + '</div>' +
-      '<div class="ch-title">' + c.corto + '</div>';
+      '<div class="ch-title">' + c.corto + '</div>' +
+      (n ? '<div class="round-tag">Reto <b>' + n + '</b> de ' + state.ronda.total + '</div>' : "");
   }
 
   function startChallenge() {
+    if (!state.ronda.total) {
+      state.ronda = { total: RETOS_POR_RONDA, hechos: 0, aciertos: 0 };
+    }
     state.mode = "challenge";
     state.result = null;
     var c = CASILLAS[state.casilla];
@@ -1298,7 +1315,8 @@
     setLock(400);
 
     var body = el("ch-body");
-    if (c.id === "real_fraude") {      var btns = body.querySelectorAll("[data-a]");
+    if (c.id === "real_fraude") {
+      var btns = body.querySelectorAll("[data-a]");
       for (var i = 0; i < btns.length; i++) {
         btns[i].addEventListener("click", function () {
           var pick = this.getAttribute("data-a");
@@ -1485,6 +1503,8 @@
 
     state.mode = "result";
     state.lastCorrect = acierto;
+    state.ronda.hechos += 1;
+    if (acierto) state.ronda.aciertos += 1;
     setLock(400);
     if (acierto) beep(880, 0.14, "sine", 0.06);
     else beep(220, 0.2, "triangle", 0.06);
@@ -1501,9 +1521,17 @@
   }
 
   function accionesHTML() {
+    var ultimo = state.ronda.hechos >= state.ronda.total;
+    var texto = ultimo ? "VER RESULTADO" : "SIGUIENTE";
     return '<div class="actions">' +
-      '<button class="btn solid" id="btn-next">SIGUIENTE ' + ICON.next + '</button>' +
+      '<button class="btn solid" id="btn-next">' + texto + ' ' + ICON.next + '</button>' +
     '</div>';
+  }
+
+  function siguientePaso() {
+    if (state.mode !== "result") return;
+    if (state.ronda.hechos >= state.ronda.total) showPrize();
+    else startChallenge();
   }
 
   function finalizaResultado() {
@@ -1511,7 +1539,7 @@
     if (!next) return;
     next.addEventListener("click", function () {
       if (locked()) return;
-      showPrize();
+      siguientePaso();
     });
   }
 
@@ -1536,7 +1564,7 @@
     var r = state.reto;
     var body = el("res-body");
 
-    el("res-head").innerHTML = headHTML(c, false);
+    el("res-head").innerHTML = headHTML(c, true);
     el("res-banner").innerHTML = bannerHTML(acierto);
 
     if (c.id === "real_fraude") {
@@ -1711,6 +1739,7 @@
 
     state.mode = "hack-result";
     state.lastCorrect = ok;
+    state.ronda = { total: 1, hechos: 1, aciertos: ok ? 1 : 0 };
     state.hackElegido = elegido;
     state.hackTimeout = !!tiempoAgotado;
     if (ok) beep(880, 0.14, "sine", 0.06);
@@ -1780,15 +1809,24 @@
     stage.classList.remove("hacked");
 
     state.counters.p += 1;
-    if (state.lastCorrect) state.counters.a += 1;
+    state.counters.a += state.ronda.aciertos;
     guardaContador();
     pintaContador();
+
+    var sub = "";
+    if (state.ronda.total > 1) {
+      var nh = state.ronda.aciertos;
+      var nt = state.ronda.total;
+      sub = '<p class="sub">' + (nh === nt ? "¡PLENO! " : "") + 'Acertaste ' + nh + ' de ' + nt + '</p>';
+    } else if (state.lastCorrect) {
+      sub = '<p class="sub">¡Acertaste!</p>';
+    }
 
     var tip = TIPS[Math.floor(Math.random() * TIPS.length)];
     el("prize-content").innerHTML =
       '<div class="prize-icon">' + ICON.shield + '</div>' +
       '<h2>¡LISTO! RECOGE TU PREMIO<br>Y TU TARJETA DE CONSEJOS</h2>' +
-      (state.lastCorrect ? '<p class="sub">¡Acertaste!</p>' : '') +
+      sub +
       '<div class="tip"><span class="lbl2">Consejo del día</span>' + tip + '</div>' +
       '<button class="btn solid" id="btn-again">VOLVER A GIRAR</button>';
 
@@ -1800,7 +1838,7 @@
       resetAll();
     });
 
-    later(12000, function () {
+    later(15000, function () {
       if (state.mode === "prize") resetAll();
     });
   }
@@ -1821,6 +1859,7 @@
     state.hackVista = null;
     state.hackElegido = -1;
     state.hackTimeout = false;
+    state.ronda = { total: 0, hechos: 0, aciertos: 0 };
     state.lastAction = Date.now();
     reveal.classList.remove("show");
     stage.classList.remove("hacked");
@@ -1852,7 +1891,7 @@
       return;
     }
     if (state.mode === "challenge") { responder(false); return; }
-    if (state.mode === "result") { showPrize(); return; }
+    if (state.mode === "result") { siguientePaso(); return; }
     if (state.mode === "prize") { resetAll(); return; }
     if (state.mode === "hack" || state.mode === "hack-result") { showPrize(); }
   }
@@ -1897,7 +1936,11 @@
   /* Inactividad: la explicación avanza sola; el resto vuelve a S0 */
   setInterval(function () {
     var quieto = Date.now() - state.lastAction;
-    if ((state.mode === "result" || state.mode === "hack-result") && quieto > 20000) {
+    if (state.mode === "result" && quieto > 20000) {
+      siguientePaso();
+      return;
+    }
+    if (state.mode === "hack-result" && quieto > 20000) {
       showPrize();
       return;
     }
