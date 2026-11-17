@@ -21,12 +21,16 @@ Cada una propone un ejercicio distinto, no la misma pregunta con otro texto:
 
 | Casilla | Qué hace el visitante | Tiempo |
 |---|---|---|
-| ¿Real o fraude? | Juzga un mensaje y ve el fragmento exacto que lo delata | 15 s |
-| Encuentra la alerta | Busca y pulsa la parte sospechosa del correo | 20 s |
-| Contraseña fuerte | Compara tres contraseñas parecidas y ve cuánto tardarían en romperse | 15 s |
-| ¿Qué ataque es? | Identifica el ataque entre tres opciones | 20 s |
-| ¿Qué harías? | Elige la acción segura ante una situación real | 15 s |
-| ¡Hackeado! | Decide bajo presión en una pantalla de ataque simulada | 6 s |
+| ¿Real o fraude? | Juzga un mensaje y ve el fragmento exacto que lo delata | sin límite |
+| Encuentra la alerta | Busca y pulsa la parte sospechosa del correo | sin límite |
+| Contraseña fuerte | Compara tres contraseñas parecidas y ve cuánto tardarían en romperse | sin límite |
+| ¿Qué ataque es? | Identifica el ataque entre tres opciones | sin límite |
+| ¿Qué harías? | Elige la acción segura ante una situación real | sin límite |
+| ¡Hackeado! | Decide bajo presión en una pantalla de ataque simulada | 8 s |
+
+No hay cronómetro en las dinámicas de conocimiento: el visitante lee y decide a
+su ritmo. La única cuenta atrás es la de «¡Hackeado!», porque ahí la prisa es
+justamente lo que se está enseñando.
 
 Retos disponibles: 6 de «¿Real o fraude?», 4 de «Encuentra la alerta», 4 de
 «Contraseña fuerte», 6 de «¿Qué ataque es?», 7 de «¿Qué harías?» y 3 variantes
@@ -35,10 +39,10 @@ contenido es ficticio: dominios `.example`, «Banco Ejemplo» y cifras inventada
 
 ## Flujo
 
-Girar (3,8 s) → casilla revelada (1,6 s) → reto con cronómetro → resultado con
-la explicación → premio (12 s) → vuelve al inicio. El resultado avanza solo a
-los 15 s si nadie pulsa SIGUIENTE. Tras 45 s sin clics, la página vuelve al
-inicio.
+Girar (3,8 s) → casilla revelada (1,6 s) → reto **sin límite de tiempo** →
+resultado con la explicación → premio (12 s) → vuelve al inicio. Si el visitante
+no toca nada en el resultado, avanza solo a los 20 s; tras 60 s de inactividad
+la página vuelve al inicio.
 
 ## Controles del operador
 
@@ -69,8 +73,11 @@ propósito:
 - **«Verdadero o falso»** se sustituyó por **«¿Qué harías?»**: las frases
   binarias se acertaban por azar y no hacían pensar.
 - **«¡Hackeado!»** ya no es una secuencia automática: ahora plantea una decisión
-  con seis segundos y cuenta como acierto, en lugar de dejar al visitante
+  con ocho segundos y cuenta como acierto, en lugar de dejar al visitante
   mirando diecisiete segundos sin hacer nada.
+- **Sin cronómetro en las dinámicas de conocimiento**: el cronómetro castigaba a
+  quien lee despacio y contradecía el mensaje del stand («piensa antes de hacer
+  clic»). Solo se mantiene la cuenta atrás del ataque simulado.
 
 ## Pruebas sugeridas antes del evento
 

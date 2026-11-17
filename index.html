@@ -365,9 +365,8 @@
     font-size:38px; line-height:1.35; color:var(--text-2);
   }
   .explain b{ color:var(--text); }
-  .actions{ display:flex; flex-direction:column; align-items:flex-end; gap:8px; padding-top:4px; }
-  .autonext{ font-size:24px; color:var(--text-2); }
-  .autonext b{ color:var(--cyan); }
+  .actions{ display:flex; justify-content:flex-end; padding-top:4px; }
+  .no-rush{ margin-left:auto; font-size:26px; letter-spacing:1px; color:var(--text-2); }
 
   .definition{
     max-width:1200px; margin:0 auto; width:100%;
@@ -396,7 +395,7 @@
   /* ---------- ¡Hackeado! ---------- */
   #screen-hack{ padding:0; }
   #screen-hack.active{ display:flex; flex-direction:column; }
-  .hack-a, .hack-b, .hack-c{
+  .hack-a, .hack-c{
     flex:1 1 auto; display:flex; flex-direction:column;
     align-items:center; justify-content:center; gap:34px; text-align:center;
   }
@@ -410,10 +409,6 @@
     50%{ transform:translateX(9px); } 75%{ transform:translateX(-5px); }
     100%{ transform:translateX(0); }
   }
-  .hack-b{ background:linear-gradient(180deg,#0b1f42,#0A1428); }
-  .hack-b svg{ width:180px; height:180px; color:var(--cyan); }
-  .hack-b h1{ margin:0; font-size:96px; font-weight:800; }
-  .hack-b p{ margin:0; font-size:44px; color:var(--cyan); }
   .hack-c{ background:var(--bg); padding:0 90px 30px; gap:24px; }
   .hack-c h2{ margin:0; font-size:58px; }
   .hack-c .atk{ font-size:76px; font-weight:800; color:var(--bad); margin:0; }
@@ -689,12 +684,12 @@
      DATOS
      ============================================================ */
   var CASILLAS = [
-    { id:"real_fraude", nombre:"¿Real o fraude?",     corto:"¿REAL O FRAUDE?",     color:"#2D8CFF", icono:"hook",   tiempo:15 },
-    { id:"alerta",      nombre:"Encuentra la alerta", corto:"ENCUENTRA LA ALERTA", color:"#1F6FD1", icono:"flag",   tiempo:20 },
-    { id:"password",    nombre:"Contraseña fuerte",   corto:"CONTRASEÑA FUERTE",   color:"#3FB8E8", icono:"key",    tiempo:15 },
-    { id:"ataque",      nombre:"¿Qué ataque es?",     corto:"¿QUÉ ATAQUE ES?",     color:"#5B6BFF", icono:"lupa",   tiempo:20 },
-    { id:"que_harias", nombre:"¿Qué harías?",       corto:"¿QUÉ HARÍAS?",       color:"#2AA6A0", icono:"cursor", tiempo:15 },
-    { id:"hackeado",    nombre:"¡Hackeado!",          corto:"¡HACKEADO!",          color:"#FF4D4D", icono:"skull",  tiempo:0  }
+    { id:"real_fraude", nombre:"¿Real o fraude?",     corto:"¿REAL O FRAUDE?",     color:"#2D8CFF", icono:"hook"   },
+    { id:"alerta",      nombre:"Encuentra la alerta", corto:"ENCUENTRA LA ALERTA", color:"#1F6FD1", icono:"flag"   },
+    { id:"password",    nombre:"Contraseña fuerte",   corto:"CONTRASEÑA FUERTE",   color:"#3FB8E8", icono:"key"    },
+    { id:"ataque",      nombre:"¿Qué ataque es?",     corto:"¿QUÉ ATAQUE ES?",     color:"#5B6BFF", icono:"lupa"   },
+    { id:"que_harias",  nombre:"¿Qué harías?",        corto:"¿QUÉ HARÍAS?",        color:"#2AA6A0", icono:"cursor" },
+    { id:"hackeado",    nombre:"¡Hackeado!",          corto:"¡HACKEADO!",          color:"#FF4D4D", icono:"skull"  }
   ];
 
   var RETOS = {
@@ -730,7 +725,7 @@
         senales:[
           "Número nuevo y desconocido",
           "Pide dinero con urgencia",
-          "No quiere que llames: así no confirmas que es él"
+          "Mete prisa para que no verifiques"
         ]
       },
       {
@@ -986,7 +981,7 @@
   var HACKS = [
     {
       titulo:"TUS ARCHIVOS HAN SIDO CIFRADOS",
-      sub:"Tienes 6 segundos antes de perderlo todo",
+      sub:"Tienes 8 segundos antes de perderlo todo",
       pregunta:"¿Qué haces?",
       ataque:"Ransomware",
       intro:"Un programa malicioso cifra tus archivos y pide dinero para devolverlos.",
@@ -999,7 +994,7 @@
     },
     {
       titulo:"¡VIRUS DETECTADO!",
-      sub:"Llama ya al 800-000-0000 (ficticio)",
+      sub:"Llama ya al 800-000-0000",
       pregunta:"La ventana no se cierra. ¿Qué haces?",
       ataque:"Estafa de falso soporte técnico",
       intro:"Una ventana falsa asusta para que llames y entregues datos o dinero.",
@@ -1057,7 +1052,6 @@
     raf: 0,
     timerOn: false,
     timerRoot: null,
-    nextTick: null,
     hack: null,
     hackVista: null,
     hackElegido: -1,
@@ -1312,14 +1306,10 @@
   /* ============================================================
      PANTALLA DE RETO
      ============================================================ */
-  function headHTML(c, conTimer) {
+  function headHTML(c, conPista) {
     return '<div class="ch-icon">' + ICON[c.icono] + '</div>' +
       '<div class="ch-title">' + c.corto + '</div>' +
-      (conTimer && c.tiempo ?
-        '<div class="timer" id="timer">' +
-          '<div class="timer-bar"><div class="timer-fill"></div></div>' +
-          '<div class="timer-num">' + c.tiempo + '</div>' +
-        '</div>' : "");
+      (conPista === false ? "" : '<div class="no-rush">Tómate tu tiempo</div>');
   }
 
   function startChallenge() {
@@ -1329,18 +1319,17 @@
     var idx = siguienteReto(c.id);
     state.reto = RETOS[c.id][idx];
 
-    el("ch-head").innerHTML = headHTML(c, true);
+    el("ch-head").innerHTML = headHTML(c);
     el("ch-body").innerHTML = cuerpoReto(c.id);
     showScreen("screen-challenge");
     setLock(400);
 
     var body = el("ch-body");
-    if (c.id === "real_fraude") {
-      var btns = body.querySelectorAll("[data-a]");
+    if (c.id === "real_fraude") {      var btns = body.querySelectorAll("[data-a]");
       for (var i = 0; i < btns.length; i++) {
         btns[i].addEventListener("click", function () {
           var pick = this.getAttribute("data-a");
-          responder(pick === state.reto.correcta, false);
+          responder(pick === state.reto.correcta);
         });
       }
     } else if (c.id === "alerta") {
@@ -1349,7 +1338,7 @@
         zonas[j].addEventListener("click", function () {
           var z = parseInt(this.getAttribute("data-z"), 10);
           state.result = { zona: z };
-          responder(!!state.reto.zonas[z].esSenal, false);
+          responder(!!state.reto.zonas[z].esSenal);
         });
       }
     } else if (c.id === "password" || c.id === "ataque") {
@@ -1358,7 +1347,7 @@
         cards[k].addEventListener("click", function () {
           var i2 = parseInt(this.getAttribute("data-i"), 10);
           state.result = { indice: i2 };
-          responder(!!state.vista[i2].correct, false);
+          responder(!!state.vista[i2].correct);
         });
       }
     } else if (c.id === "que_harias") {
@@ -1367,18 +1356,12 @@
         qBtns[m].addEventListener("click", function () {
           var i3 = parseInt(this.getAttribute("data-q"), 10);
           state.result = { indice: i3 };
-          responder(!!state.vista[i3].correct, false);
+          responder(!!state.vista[i3].correct);
         });
       }
     }
 
-    // El cronómetro arranca medio segundo después de que se pinte el reto.
-    later(500, function () {
-      if (state.mode !== "challenge") return;
-      startTimer(c.tiempo, function () {
-        if (state.mode === "challenge") responder(false, true);
-      });
-    });
+    setLock(400);
   }
 
   function cuerpoReto(id) {
@@ -1522,26 +1505,22 @@
   /* ============================================================
      RESULTADO
      ============================================================ */
-  function responder(acierto, tiempoAgotado) {
+  function responder(acierto) {
     if (locked()) return;
     if (state.mode !== "challenge") return;
     stopTimer();
 
     state.mode = "result";
     state.lastCorrect = acierto;
-    state.timeout = !!tiempoAgotado;
     setLock(400);
     if (acierto) beep(880, 0.14, "sine", 0.06);
     else beep(220, 0.2, "triangle", 0.06);
 
-    renderResultado(acierto, tiempoAgotado);
+    renderResultado(acierto);
     showScreen("screen-result");
   }
 
-  function bannerHTML(acierto, tiempoAgotado) {
-    if (tiempoAgotado) {
-      return '<div class="banner warn">' + ICON.clock + ' Se acabó el tiempo. Mira la respuesta:</div>';
-    }
+  function bannerHTML(acierto) {
     if (acierto) {
       return '<div class="banner ok">' + ICON.check + ' ¡Correcto!</div>';
     }
@@ -1550,7 +1529,6 @@
 
   function accionesHTML() {
     return '<div class="actions">' +
-      '<div class="autonext">Continúa solo en <b id="autonext-n">15</b> s</div>' +
       '<button class="btn solid" id="btn-next">SIGUIENTE ' + ICON.next + '</button>' +
     '</div>';
   }
@@ -1562,17 +1540,6 @@
       if (locked()) return;
       showPrize();
     });
-    var t = 15;
-    var n = el("autonext-n");
-    state.nextTick = setInterval(function () {
-      t -= 1;
-      if (n) n.textContent = Math.max(0, t);
-      if (t <= 0) {
-        clearInterval(state.nextTick);
-        state.nextTick = null;
-        if (state.mode === "result") showPrize();
-      }
-    }, 1000);
   }
 
   function iconoAtaque(nombre) {
@@ -1591,13 +1558,13 @@
     return ICON.lupa;
   }
 
-  function renderResultado(acierto, tiempoAgotado) {
+  function renderResultado(acierto) {
     var c = CASILLAS[state.casilla];
     var r = state.reto;
     var body = el("res-body");
 
     el("res-head").innerHTML = headHTML(c, false);
-    el("res-banner").innerHTML = bannerHTML(acierto, tiempoAgotado);
+    el("res-banner").innerHTML = bannerHTML(acierto);
 
     if (c.id === "real_fraude") {
       var lista = r.senales.map(function (s, i) {
@@ -1746,7 +1713,7 @@
         '<div class="hack-actions">' + botones + '</div>' +
         '<div class="timer" id="hack-timer">' +
           '<div class="timer-bar"><div class="timer-fill"></div></div>' +
-          '<div class="timer-num">6</div>' +
+          '<div class="timer-num">8</div>' +
         '</div>' +
       '</div>';
 
@@ -1760,7 +1727,7 @@
 
     showScreen("screen-hack");
     setLock(300);
-    startTimer(6, function () {
+    startTimer(8, function () {
       if (state.mode === "hack") hackResponder(false, true, -1);
     }, "hack-timer");
   }
@@ -1777,13 +1744,7 @@
     if (ok) beep(880, 0.14, "sine", 0.06);
     else beep(170, 0.25, "triangle", 0.06);
 
-    el("screen-hack").innerHTML =
-      '<div class="hack-b">' + ICON.shield +
-        '<h1>TRANQUILO. ES UNA SIMULACIÓN.</h1>' +
-        '<p>Esto le pasa a miles de personas cada día.</p>' +
-      '</div>';
-
-    later(1400, function () {
+    later(400, function () {
       if (state.mode === "hack-result") renderHackExplicacion();
     });
   }
@@ -1835,10 +1796,6 @@
       if (locked()) return;
       showPrize();
     });
-
-    later(20000, function () {
-      if (state.mode === "hack-result") showPrize();
-    });
   }
 
   /* ============================================================
@@ -1848,7 +1805,6 @@
     if (state.mode === "prize") return;
     clearLater();
     stopTimer();
-    if (state.nextTick) { clearInterval(state.nextTick); state.nextTick = null; }
     state.mode = "prize";
     stage.classList.remove("hacked");
 
@@ -1862,7 +1818,7 @@
     el("prize-content").innerHTML =
       '<div class="prize-icon">' + ICON.shield + '</div>' +
       '<h2>¡LISTO! RECOGE TU PREMIO<br>Y TU TARJETA DE CONSEJOS</h2>' +
-      '<p class="sub">' + (state.lastCorrect ? "¡Acertaste!" : "Nadie nace sabiendo: llévate la tarjeta de consejos.") + '</p>' +
+      '<p class="sub">' + (state.lastCorrect ? "¡Acertaste!" : "Gracias por participar.") + '</p>' +
       '<div class="tip"><span class="lbl2">Consejo del día</span>' + tip + '</div>' +
       '<button class="btn solid" id="btn-again">VOLVER A GIRAR</button>';
 
@@ -1885,7 +1841,6 @@
   function resetAll() {
     clearLater();
     stopTimer();
-    if (state.nextTick) { clearInterval(state.nextTick); state.nextTick = null; }
     state.mode = "idle";
     state.casilla = null;
     state.reto = null;
@@ -1926,7 +1881,7 @@
       else startChallenge();
       return;
     }
-    if (state.mode === "challenge") { responder(false, true); return; }
+    if (state.mode === "challenge") { responder(false); return; }
     if (state.mode === "result") { showPrize(); return; }
     if (state.mode === "prize") { resetAll(); return; }
     if (state.mode === "hack" || state.mode === "hack-result") { showPrize(); }
@@ -1934,6 +1889,7 @@
 
   document.addEventListener("keydown", function (e) {
     var k = e.key.toLowerCase();
+    state.lastAction = Date.now();
     if (k === "r" || e.key === "Escape") { resetAll(); e.preventDefault(); return; }
     if (k === "m") {
       state.sound = !state.sound;
@@ -1958,6 +1914,7 @@
   var cursorTimer = null;
   function despiertaCursor() {
     document.body.classList.remove("nocursor");
+    state.lastAction = Date.now();
     clearTimeout(cursorTimer);
     cursorTimer = setTimeout(function () {
       document.body.classList.add("nocursor");
@@ -1967,11 +1924,14 @@
   document.addEventListener("mousedown", despiertaCursor);
   despiertaCursor();
 
-  /* Inactividad: volver a S0 tras 45 s sin clics */
+  /* Inactividad: la explicación avanza sola; el resto vuelve a S0 */
   setInterval(function () {
-    if (state.mode !== "idle" && Date.now() - state.lastAction > 45000) {
-      resetAll();
+    var quieto = Date.now() - state.lastAction;
+    if ((state.mode === "result" || state.mode === "hack-result") && quieto > 20000) {
+      showPrize();
+      return;
     }
+    if (state.mode !== "idle" && quieto > 60000) resetAll();
   }, 1000);
 
   document.addEventListener("mousedown", function () { state.lastAction = Date.now(); });
