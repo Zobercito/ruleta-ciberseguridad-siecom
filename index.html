@@ -66,19 +66,10 @@
   .brand{ display:flex; align-items:center; gap:20px; }
   .brand svg{ width:62px; height:62px; color:var(--cyan); }
   .brand .t1{ font-size:40px; font-weight:800; letter-spacing:3px; }
-  .counter{ font-size:32px; font-weight:600; color:var(--text-2); }
-  .counter b{ font-size:38px; color:var(--cyan); }
-
-  footer{
-    flex:0 0 90px; display:flex; align-items:center; justify-content:center;
-    color:var(--cyan); font-size:32px; font-weight:600; letter-spacing:.5px;
-    border-top:2px solid rgba(111,211,255,.12); position:relative; z-index:3;
-  }
 
   main{ position:relative; flex:1 1 auto; min-height:0; z-index:2; overflow:hidden; }
 
-  #stage.hacked header,
-  #stage.hacked footer{ display:none; }
+  #stage.hacked header{ display:none; }
   #stage.hacked main{ z-index:9; }
 
   /* Pantallas */
@@ -313,15 +304,13 @@
   .pcard.right{ border-color:var(--ok); box-shadow:0 0 34px rgba(46,204,113,.45); }
   .pcard.wrong{ border-color:var(--bad); box-shadow:0 0 34px rgba(255,77,77,.4); }
   .pcard .tag{ font-size:28px; font-weight:700; color:var(--ok); }
-  .pcard .tag.bad{ color:var(--bad); }
-  .strength{ width:100%; height:16px; border-radius:8px; background:rgba(255,255,255,.15); overflow:hidden; }
+  .pcard .tag.bad{ color:var(--bad); }  .strength{ width:100%; height:16px; border-radius:8px; background:rgba(255,255,255,.15); overflow:hidden; }
   .strength i{ display:block; height:100%; border-radius:8px; }
   .strength i.s-bad{ background:var(--bad); }
   .strength i.s-warn{ background:var(--warn); }
   .strength i.s-ok{ background:var(--ok); }
   .ptime{ font-size:28px; color:var(--text-2); text-align:center; }
   .ptime b{ color:var(--text); font-size:30px; display:block; }
-  .note{ text-align:center; color:var(--text-2); font-size:28px; }
   .hintline{ text-align:center; font-size:44px; font-weight:600; color:var(--text-2); }
 
   /* ---------- Verdadero o falso / situación ---------- */
@@ -366,7 +355,6 @@
   }
   .explain b{ color:var(--text); }
   .actions{ display:flex; justify-content:flex-end; padding-top:4px; }
-  .no-rush{ margin-left:auto; font-size:26px; letter-spacing:1px; color:var(--text-2); }
 
   .definition{
     max-width:1200px; margin:0 auto; width:100%;
@@ -457,7 +445,6 @@
   @keyframes floaty{ 0%,100%{ transform:translate(-50%,-50%) translateY(0); } 50%{ transform:translate(-50%,-50%) translateY(-16px); } }
   @keyframes hubGlow{ 0%,100%{ filter:drop-shadow(0 0 16px rgba(45,140,255,.55)); } 50%{ filter:drop-shadow(0 0 36px rgba(111,211,255,.95)); } }
   @keyframes wrapGlow{ 0%,100%{ filter:drop-shadow(0 0 12px rgba(45,140,255,.2)); } 50%{ filter:drop-shadow(0 0 34px rgba(45,140,255,.5)); } }
-  @keyframes bump{ 0%{ transform:scale(1);} 45%{ transform:scale(1.4); color:#fff; } 100%{ transform:scale(1);} }
   @keyframes popIn{ 0%{ opacity:0; transform:scale(.86);} 100%{ opacity:1; transform:scale(1);} }
   @keyframes stampIn{ 0%{ opacity:0; transform:rotate(-18deg) scale(2.6);} 60%{ opacity:1; transform:rotate(-12deg) scale(.95);} 100%{ opacity:1; transform:rotate(-12deg) scale(1);} }
 
@@ -500,8 +487,6 @@
     outline:4px solid var(--cyan); outline-offset:4px;
   }
 
-  #counter-p{ display:inline-block; }
-  #counter-p.bump{ animation:bump .5s ease-out; }
 
   .banner{ animation:fadeUp .3s both; }
   .signals .sig{ animation:fadeUp .28s both; }
@@ -588,7 +573,6 @@
       </svg>
       <span class="t1">CIBERSEGURIDAD</span>
     </div>
-    <div class="counter">Hoy han participado: <b id="counter-p">0</b></div>
   </header>
 
   <main>
@@ -640,8 +624,6 @@
     <!-- ¡Hackeado! -->
     <section class="screen" id="screen-hack"></section>
   </main>
-
-  <footer>Piensa antes de hacer clic. Protege antes de lamentar.</footer>
 </div>
 
 <div id="operator">
@@ -1036,7 +1018,6 @@
   var reveal     = document.getElementById("reveal");
   var revealName = document.getElementById("reveal-name");
   var revealIcon = document.getElementById("reveal-icon");
-  var counterP   = document.getElementById("counter-p");
 
   var state = {
     mode: "idle",        // idle | spinning | reveal | challenge | result | hack | hack-result | prize
@@ -1160,15 +1141,8 @@
   }
 
   function pintaContador() {
-    counterP.textContent = state.counters.p;
     el("op-p").textContent = state.counters.p;
     el("op-a").textContent = state.counters.a;
-  }
-
-  function bumpContador() {
-    counterP.classList.remove("bump");
-    void counterP.offsetWidth;
-    counterP.classList.add("bump");
   }
 
   /* ============================================================
@@ -1306,10 +1280,9 @@
   /* ============================================================
      PANTALLA DE RETO
      ============================================================ */
-  function headHTML(c, conPista) {
+  function headHTML(c) {
     return '<div class="ch-icon">' + ICON[c.icono] + '</div>' +
-      '<div class="ch-title">' + c.corto + '</div>' +
-      (conPista === false ? "" : '<div class="no-rush">Tómate tu tiempo</div>');
+      '<div class="ch-title">' + c.corto + '</div>';
   }
 
   function startChallenge() {
@@ -1616,7 +1589,6 @@
       body.innerHTML =
         '<div class="pcards">' + tarjetas + '</div>' +
         '<div class="explain">' + r.explicacion + '</div>' +
-        '<div class="note">Tiempos ilustrativos</div>' +
         accionesHTML();
 
       // La barra de fortaleza se llena al aparecer, como un descifrado.
@@ -1781,7 +1753,6 @@
     el("screen-hack").innerHTML =
       '<div class="hack-c">' +
         banner +
-        '<h2>¿Qué acabas de ver?</h2>' +
         '<p class="atk">' + h.ataque + '</p>' +
         '<p class="intro">' + h.intro + '</p>' +
         acierto +
@@ -1812,13 +1783,12 @@
     if (state.lastCorrect) state.counters.a += 1;
     guardaContador();
     pintaContador();
-    bumpContador();
 
     var tip = TIPS[Math.floor(Math.random() * TIPS.length)];
     el("prize-content").innerHTML =
       '<div class="prize-icon">' + ICON.shield + '</div>' +
       '<h2>¡LISTO! RECOGE TU PREMIO<br>Y TU TARJETA DE CONSEJOS</h2>' +
-      '<p class="sub">' + (state.lastCorrect ? "¡Acertaste!" : "Gracias por participar.") + '</p>' +
+      (state.lastCorrect ? '<p class="sub">¡Acertaste!</p>' : '') +
       '<div class="tip"><span class="lbl2">Consejo del día</span>' + tip + '</div>' +
       '<button class="btn solid" id="btn-again">VOLVER A GIRAR</button>';
 
