@@ -185,9 +185,11 @@
   .msg{
     width:100%; max-width:1340px; margin:0 auto;
     border:3px solid rgba(111,211,255,.35); border-radius:26px;
-    background:var(--panel); overflow:hidden;
+    background:var(--panel); overflow:hidden; position:relative;
     box-shadow:0 0 28px rgba(45,140,255,.22);
   }
+  .msg-wrap{ position:relative; width:100%; max-width:1340px; margin:0 auto; }
+  .msg-wrap .msg{ max-width:none; }
   .msg.suspicious{ border-color:rgba(255,77,77,.75); box-shadow:0 0 30px rgba(255,77,77,.3); }
   .msg-head{ background:var(--panel-2); padding:16px 30px; display:flex; flex-direction:column; gap:8px; }
   .msg-line{ display:flex; gap:18px; font-size:34px; align-items:baseline; }
@@ -200,10 +202,6 @@
   }
   .msg-body{ padding:26px 36px; font-size:40px; line-height:1.4; }
   .msg-body.bubble{ font-size:38px; }
-  .mk{
-    text-decoration:underline; text-decoration-color:var(--bad);
-    text-decoration-thickness:4px; text-underline-offset:7px; color:#FFD8D8;
-  }
 
   /* Zonas clicables del correo */
   .zones{ padding:14px 18px; display:flex; flex-direction:column; }
@@ -230,13 +228,25 @@
   .msg.compact .zone{ min-height:68px; font-size:30px; }
   .msg.compact .zone .zk{ flex-basis:110px; font-size:22px; }
   .res-grid{ display:grid; grid-template-columns:1.55fr 1fr; gap:36px; align-items:center; }
-  #screen-result .ch-body{ gap:20px; }
-  #screen-result .situation{ font-size:42px; padding:22px 30px; }
-  #screen-result .situation svg{ width:90px; height:90px; }
-  #screen-result .definition{ padding:20px 30px; }
-  #screen-result .definition h2{ font-size:44px; }
-  #screen-result .definition p{ font-size:28px; }
+  #screen-result .ch-body{ gap:16px; }
+  #screen-result .situation{ font-size:38px; padding:20px 30px; }
+  #screen-result .situation svg{ width:86px; height:86px; }
+  #screen-result .definition{ padding:18px 30px; }
+  #screen-result .definition h2{ font-size:42px; }
+  #screen-result .definition p{ font-size:27px; }
   #screen-result .signals{ align-self:center; }
+
+  /* Resumen compacto de «¿Qué harías?» en el resultado */
+  .q-summary{
+    max-width:1560px; margin:0 auto; text-align:center;
+    font-size:30px; line-height:1.3; color:var(--text-2);
+  }
+  #screen-result .q-line{
+    max-width:1460px; margin:0 auto;
+    font-size:29px; line-height:1.35; color:var(--text-2);
+  }
+  #screen-result .q-line b{ color:var(--text); }
+  #screen-result .answers .btn{ font-size:34px; padding:0 24px; }
 
   /* Ajustes para que el resultado quepa siempre sin recortes */
   #screen-result .ch-head{ padding:2px 0 10px; }
@@ -244,11 +254,11 @@
   #screen-result .ch-title{ font-size:40px; }
   #screen-result .banner{ min-height:92px; font-size:46px; }
   #screen-result .banner svg{ width:52px; height:52px; }
-  #screen-result .pcard{ min-height:320px; }
-  #screen-result .explain{ font-size:34px; }
+  #screen-result .pcard{ min-height:274px; }
+  #screen-result .explain{ font-size:32px; }
   #screen-result .btn{ min-height:100px; font-size:40px; }
   #screen-result .btn svg{ width:46px; height:46px; }
-  #screen-result .answers .btn{ min-height:110px; min-width:400px; }
+  #screen-result .answers .btn{ min-height:104px; min-width:400px; }
   #screen-result .signals .sig{ font-size:30px; }
   #screen-result .phrase.big{ font-size:60px; }
 
@@ -275,6 +285,11 @@
 
   .answers{ display:flex; justify-content:center; gap:48px; flex-wrap:wrap; }
   .answers .btn{ min-width:480px; min-height:140px; }
+  .answers.three{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:32px;
+    width:100%; max-width:1720px; margin:0 auto;
+  }
+  .answers.three .btn{ min-width:0; width:100%; font-size:42px; padding:0 20px; }
 
   /* ---------- Contraseñas ---------- */
   .pcards{ display:grid; grid-template-columns:repeat(3,1fr); gap:44px; padding:0 30px; }
@@ -320,8 +335,8 @@
     max-width:1420px; margin:0 auto;
     display:flex; align-items:center; gap:32px;
     background:var(--panel); border:3px solid rgba(111,211,255,.35);
-    border-radius:26px; padding:30px 40px;
-    font-size:50px; line-height:1.3;
+    border-radius:26px; padding:24px 36px;
+    font-size:46px; line-height:1.3;
   }
   .situation svg{ width:120px; height:120px; flex:0 0 auto; color:var(--cyan); }
 
@@ -350,7 +365,9 @@
     font-size:38px; line-height:1.35; color:var(--text-2);
   }
   .explain b{ color:var(--text); }
-  .actions{ display:flex; justify-content:flex-end; padding-top:4px; }
+  .actions{ display:flex; flex-direction:column; align-items:flex-end; gap:8px; padding-top:4px; }
+  .autonext{ font-size:24px; color:var(--text-2); }
+  .autonext b{ color:var(--cyan); }
 
   .definition{
     max-width:1200px; margin:0 auto; width:100%;
@@ -386,11 +403,8 @@
   .hack-a{ background:#0A0A0A; color:var(--bad); font-family:Consolas, "Courier New", monospace; }
   .hack-a h1{ margin:0; font-size:78px; font-weight:800; letter-spacing:2px; animation:blink 1s steps(1) infinite; }
   .hack-a .sub{ font-size:44px; color:#FF9C9C; }
-  .hack-a .bar{ width:820px; height:26px; border:2px solid var(--bad); border-radius:6px; overflow:hidden; }
-  .hack-a .bar i{ display:block; height:100%; background:var(--bad); width:0; transition:width 2.6s linear; }
-  .hack-a .pct{ font-size:34px; color:#FF9C9C; }
   .hack-a.shake{ animation:shake .28s linear 4; }
-  @keyframes blink{ 50%{ opacity:.35; } }
+  @keyframes blink{ 50%{ opacity:.72; } }
   @keyframes shake{
     0%{ transform:translateX(0); } 25%{ transform:translateX(-9px); }
     50%{ transform:translateX(9px); } 75%{ transform:translateX(-5px); }
@@ -440,6 +454,126 @@
     font-size:64px; font-weight:800; text-align:center; padding:40px;
   }
   #fatal.show{ display:flex; }
+
+  /* ============================================================
+     Movimiento, foco y microinteracciones
+     ============================================================ */
+  @keyframes fadeUp{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:translateY(0); } }
+  @keyframes floaty{ 0%,100%{ transform:translate(-50%,-50%) translateY(0); } 50%{ transform:translate(-50%,-50%) translateY(-16px); } }
+  @keyframes hubGlow{ 0%,100%{ filter:drop-shadow(0 0 16px rgba(45,140,255,.55)); } 50%{ filter:drop-shadow(0 0 36px rgba(111,211,255,.95)); } }
+  @keyframes wrapGlow{ 0%,100%{ filter:drop-shadow(0 0 12px rgba(45,140,255,.2)); } 50%{ filter:drop-shadow(0 0 34px rgba(45,140,255,.5)); } }
+  @keyframes bump{ 0%{ transform:scale(1);} 45%{ transform:scale(1.4); color:#fff; } 100%{ transform:scale(1);} }
+  @keyframes popIn{ 0%{ opacity:0; transform:scale(.86);} 100%{ opacity:1; transform:scale(1);} }
+  @keyframes stampIn{ 0%{ opacity:0; transform:rotate(-18deg) scale(2.6);} 60%{ opacity:1; transform:rotate(-12deg) scale(.95);} 100%{ opacity:1; transform:rotate(-12deg) scale(1);} }
+
+  .screen.active{ animation:fadeUp .32s cubic-bezier(.2,.7,.3,1) both; }
+  .bg-shield{ animation:floaty 18s ease-in-out infinite; }
+
+  .wheel-wrap{ animation:wrapGlow 6.5s ease-in-out infinite; }
+  .hub{ animation:hubGlow 3.4s ease-in-out infinite; }
+  .wheel{ transition:filter .25s; }
+  .wheel-wrap:hover .wheel{ filter:brightness(1.05); }
+  .wheel-wrap:hover .hub{ animation-play-state:paused; }
+
+  .brand svg{ transition:transform .3s ease; }
+  .brand:hover svg{ transform:rotate(-6deg) scale(1.06); }
+
+  .btn{ transition:background .16s, box-shadow .16s, transform .12s, border-color .16s; }
+  .btn:hover{ transform:translateY(-3px); }
+  .btn:active{ transform:translateY(2px) scale(.99); }
+
+  .pcard svg{ transition:transform .22s ease, color .22s; }
+  .pcard:hover svg{ transform:scale(1.1) rotate(-5deg); color:var(--cyan); }
+  .pcard:hover{ transform:translateY(-6px); }
+
+  .zone{ transition:background .16s, border-color .16s, transform .18s; }
+  .zone:hover{ transform:translateX(6px); }
+
+  .situation{ transition:border-color .2s, box-shadow .2s; }
+  .situation:hover{ border-color:var(--cyan); box-shadow:0 0 26px rgba(45,140,255,.28); }
+
+  .msg{ transition:border-color .2s, box-shadow .2s; }
+  .msg:hover{ border-color:rgba(111,211,255,.65); box-shadow:0 0 34px rgba(45,140,255,.32); }
+
+  .definition{ transition:border-color .2s, box-shadow .2s; }
+  .definition:hover{ border-color:var(--cyan); box-shadow:0 0 26px rgba(45,140,255,.25); }
+
+  .tip-card{ transition:transform .18s, border-color .18s, box-shadow .18s; }
+  .tip-card:hover{ transform:translateY(-5px); border-color:var(--cyan); box-shadow:0 0 24px rgba(45,140,255,.3); }
+
+  .btn:focus-visible, .pcard:focus-visible, .zone:focus-visible, .hub:focus-visible{
+    outline:4px solid var(--cyan); outline-offset:4px;
+  }
+
+  #counter-p{ display:inline-block; }
+  #counter-p.bump{ animation:bump .5s ease-out; }
+
+  .banner{ animation:fadeUp .3s both; }
+  .signals .sig{ animation:fadeUp .28s both; }
+  .signals .sig:nth-child(2){ animation-delay:.07s; }
+  .signals .sig:nth-child(3){ animation-delay:.14s; }
+  .signals .sig:nth-child(4){ animation-delay:.21s; }
+  .signals .sig:nth-child(5){ animation-delay:.28s; }
+  .pcards .pcard{ animation:popIn .32s both; }
+  .pcards .pcard:nth-child(2){ animation-delay:.07s; }
+  .pcards .pcard:nth-child(3){ animation-delay:.14s; }
+  .reveal.show .name{ animation:popIn .34s both; }
+  .reveal.show #reveal-icon{ animation:popIn .4s both; }
+
+  /* Sello de veredicto sobre el mensaje */
+  .stamp{
+    position:absolute; right:-14px; top:-10px; z-index:3;
+    padding:4px 20px; border:6px solid var(--bad); border-radius:12px;
+    color:var(--bad); background:rgba(10,20,40,.9);
+    font-size:56px; font-weight:800; letter-spacing:6px; text-transform:uppercase;
+    transform:rotate(-12deg); animation:stampIn .55s cubic-bezier(.2,1.35,.4,1) both;
+    pointer-events:none;
+  }
+  .stamp.ok{ color:var(--ok); border-color:var(--ok); }
+
+  /* Fragmentos resaltados dentro de un mensaje */
+  .hl{
+    background:rgba(255,77,77,.18); border-bottom:4px solid var(--bad);
+    border-radius:5px; padding:0 4px; color:#FFE4E4;
+  }
+  .hl b{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:27px; height:27px; margin-left:7px; border-radius:50%;
+    background:var(--bad); color:#fff; font-size:17px; font-weight:800;
+    vertical-align:middle;
+  }
+
+  /* Insignias de las zonas del correo */
+  .zbadge{
+    flex:0 0 auto; width:44px; height:44px; margin-left:auto;
+    border-radius:50%; background:var(--bad); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:23px; font-weight:800;
+  }
+  .zone.picked-ok .zbadge{ background:var(--ok); }
+  .zone .you{
+    flex:0 0 auto; margin-left:10px; padding:3px 12px; border-radius:999px;
+    border:2px solid var(--cyan); color:var(--cyan);
+    font-size:20px; font-weight:700; letter-spacing:1px;
+  }
+
+  .strength i{ transition:width 1.1s cubic-bezier(.2,.8,.3,1); }
+
+  /* Decisiones de ¡Hackeado! */
+  .hack-a{ padding:0 40px; gap:24px; }
+  .hack-a h1{ margin:0; }
+  .hack-actions{ display:flex; gap:26px; width:100%; max-width:1680px; }
+  .hack-actions .btn{
+    flex:1 1 0; min-width:0; min-height:132px; font-size:34px; padding:0 20px;
+    border-color:rgba(255,77,77,.85); background:rgba(255,77,77,.1);
+  }
+  .hack-actions .btn:hover{ background:rgba(255,77,77,.24); box-shadow:0 0 26px rgba(255,77,77,.45); }
+  .hack-a .timer{ width:820px; margin:4px 0 0; }
+  .hack-a .timer-bar{ background:rgba(255,77,77,.2); }
+  .hack-a .timer-fill{ background:var(--bad); }
+  .hack-a .timer-num{ color:#FF9C9C; }
+  .hack-c{ gap:18px; }
+  .hack-c .banner{ width:100%; max-width:1560px; align-self:center; }
 
   @media (prefers-reduced-motion: reduce){
     *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
@@ -545,7 +679,10 @@
     warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 22 20H2L12 3z"/><path d="M12 9v5"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg>',
     check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 13 6 6L21 6"/></svg>',
     x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l14 14M19 5 5 19"/></svg>',
-    next: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m13 6 6 6-6 6"/></svg>'
+    next: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m13 6 6 6-6 6"/></svg>',
+    cursor: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 8-6.3 1.6L10 19 5 3z"/></svg>',
+    user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.1 3.6-6.5 8-6.5s8 2.4 8 6.5"/></svg>',
+    wifi: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a16 16 0 0 1 20 0"/><path d="M5.5 12.6a11 11 0 0 1 13 0"/><path d="M9 16.1a6 6 0 0 1 6 0"/><circle cx="12" cy="19.4" r="1.1" fill="currentColor"/></svg>'
   };
 
   /* ============================================================
@@ -556,7 +693,7 @@
     { id:"alerta",      nombre:"Encuentra la alerta", corto:"ENCUENTRA LA ALERTA", color:"#1F6FD1", icono:"flag",   tiempo:20 },
     { id:"password",    nombre:"Contraseña fuerte",   corto:"CONTRASEÑA FUERTE",   color:"#3FB8E8", icono:"key",    tiempo:15 },
     { id:"ataque",      nombre:"¿Qué ataque es?",     corto:"¿QUÉ ATAQUE ES?",     color:"#5B6BFF", icono:"lupa",   tiempo:20 },
-    { id:"vf",          nombre:"Verdadero o falso",   corto:"VERDADERO O FALSO",   color:"#2AA6A0", icono:"checkx", tiempo:12 },
+    { id:"que_harias", nombre:"¿Qué harías?",       corto:"¿QUÉ HARÍAS?",       color:"#2AA6A0", icono:"cursor", tiempo:15 },
     { id:"hackeado",    nombre:"¡Hackeado!",          corto:"¡HACKEADO!",          color:"#FF4D4D", icono:"skull",  tiempo:0  }
   ];
 
@@ -568,7 +705,12 @@
         de:"soporte@banc0-seguro.example",
         asunto:"URGENTE: tu cuenta será suspendida en 24 horas",
         cuerpo:"Ingresa aquí para verificar tus datos.",
-        correcta:"fraude", marcas:["de","asunto","cuerpo"],
+        correcta:"fraude",
+        resaltes:[
+          { c:"de",     t:"banc0" },
+          { c:"asunto", t:"URGENTE" },
+          { c:"cuerpo", t:"Ingresa aquí para verificar tus datos" }
+        ],
         senales:[
           "Dominio mal escrito (cero en lugar de «o»)",
           "Presión de tiempo",
@@ -579,18 +721,23 @@
         formato:"whatsapp", chip:"WhatsApp · número desconocido",
         de:"+1 (555) 019-2837",
         cuerpo:"Hola mamá, cambié de número. ¿Me depositas $200 ahorita? Es urgente.",
-        correcta:"fraude", marcas:["de","cuerpo"],
+        correcta:"fraude",
+        resaltes:[
+          { c:"de",     t:"+1 (555) 019-2837" },
+          { c:"cuerpo", t:"¿Me depositas $200 ahorita?" },
+          { c:"cuerpo", t:"Es urgente" }
+        ],
         senales:[
           "Número nuevo y desconocido",
-          "Urgencia y dinero",
-          "Evita la llamada: confirma al número de siempre"
+          "Pide dinero con urgencia",
+          "No quiere que llames: así no confirmas que es él"
         ]
       },
       {
         formato:"notificacion", chip:"Notificación del sistema",
         de:"Seguridad de la cuenta",
         cuerpo:"Se inició sesión en tu cuenta desde tu teléfono. Si fuiste tú, no necesitas hacer nada.",
-        correcta:"real", marcas:[],
+        correcta:"real",
         senales:[
           "No pide datos",
           "No trae enlaces",
@@ -601,7 +748,12 @@
         formato:"sms", chip:"SMS · remitente desconocido",
         de:"Ofertas Ya",
         cuerpo:"¡Ganaste un teléfono nuevo! Paga $9.99 de envío para reclamarlo: ofertas-ya.example/premio",
-        correcta:"fraude", marcas:["cuerpo"],
+        correcta:"fraude",
+        resaltes:[
+          { c:"cuerpo", t:"¡Ganaste un teléfono nuevo!" },
+          { c:"cuerpo", t:"Paga $9.99 de envío" },
+          { c:"cuerpo", t:"ofertas-ya.example/premio" }
+        ],
         senales:[
           "Premio de un concurso en el que no participaste",
           "Pide un pago",
@@ -613,7 +765,7 @@
         de:"secretaria.academica@universidad.example",
         asunto:"Tu horario del próximo semestre ya está disponible",
         cuerpo:"Entra al portal escribiendo la dirección oficial en tu navegador.",
-        correcta:"real", marcas:[],
+        correcta:"real",
         senales:[
           "Sin presión de tiempo",
           "No pide datos",
@@ -625,11 +777,16 @@
         de:"soporte@facturas-servicio.example",
         asunto:"Hemos detectado un acceso extraño",
         cuerpo:"Descarga el archivo adjunto «Factura_urgente.exe» para revisar tu cuenta.",
-        correcta:"fraude", marcas:["asunto","cuerpo"],
+        correcta:"fraude",
+        resaltes:[
+          { c:"asunto", t:"Hemos detectado un acceso extraño" },
+          { c:"cuerpo", t:"Descarga el archivo adjunto" },
+          { c:"cuerpo", t:"Factura_urgente.exe" }
+        ],
         senales:[
-          "Archivo ejecutable adjunto",
           "Mensaje alarmista",
-          "Una empresa seria no pide instalar nada por correo"
+          "Pide descargar un archivo adjunto",
+          "Archivo ejecutable (.exe)"
         ]
       }
     ],
@@ -665,7 +822,7 @@
         cuerpo:"Responde este correo con tu número de tarjeta y tu clave para desbloquearla.",
         boton:"",
         zonas:[
-          { k:"De",        t:"seguridad@tu-banco.example",     esSenal:false, motivo:"Remitente que imita al banco" },
+          { k:"De",        t:"seguridad@tu-banco.example",     esSenal:true,  motivo:"Remitente que imita al banco" },
           { k:"Asunto",    t:"Tu tarjeta fue bloqueada",       esSenal:true,  motivo:"Tono alarmista" },
           { k:"Cuerpo",    t:"Responde con tu número de tarjeta y tu clave", esSenal:true, motivo:"Pide clave y número de tarjeta por correo" },
           { k:"Hora",      t:"Enviado: 03:14 a. m.",           esSenal:false, motivo:"Hora de envío" },
@@ -689,28 +846,28 @@
 
     password: [
       {
-        opciones:["123456", "Sofia2005", "Cielo!Verde-Tren#58"],
+        opciones:["Verano2024", "v3r4n0-2024", "Cinta-Gris-Caballo-9"],
         correcta:2,
-        tiempos:["Al instante", "Unas horas", "Cientos de años"],
-        explicacion:"Larga, mezcla palabras, símbolos y números, y no usa datos personales."
+        tiempos:["Al instante", "Al instante", "Cientos de años"],
+        explicacion:"La tercera es larga y no sigue un patrón. Las dos primeras salen de una palabra y un año: un programa las prueba en segundos."
       },
       {
-        opciones:["qwerty", "Tigre-Luna-Bote-91!", "password1"],
+        opciones:["Sofia2005", "S0f1a.2005!", "Tren-Luna-Bote-91!"],
+        correcta:2,
+        tiempos:["Unas horas", "Unas horas", "Cientos de años"],
+        explicacion:"La del medio parece fuerte por los símbolos, pero es un nombre y un año con letras cambiadas: eso se prueba primero. La frase larga gana."
+      },
+      {
+        opciones:["qwerty123", "Zq7!mP2#vR9", "MiPerro2010"],
         correcta:1,
-        tiempos:["Al instante", "Cientos de años", "Al instante"],
-        explicacion:"Una frase larga y rara resiste mucho más que palabras comunes."
+        tiempos:["Al instante", "Cientos de años", "Unas horas"],
+        explicacion:"Es aleatoria y no es una palabra del diccionario. «qwerty123» y «MiPerro2010» caen al instante o en horas."
       },
       {
-        opciones:["MiPerro2010", "Zq7!mP2#vR9", "contraseña"],
-        correcta:1,
-        tiempos:["Unas horas", "Cientos de años", "Al instante"],
-        explicacion:"Es aleatoria, mezcla tipos de caracteres y no es una palabra. Un gestor de contraseñas ayuda a recordarlas."
-      },
-      {
-        opciones:["Mar-Roja-Pan-Tren-47", "admin123", "Juan1990"],
+        opciones:["Mar-Roja-Pan-47", "admin123", "Juan1990"],
         correcta:0,
         tiempos:["Cientos de años", "Al instante", "Unas horas"],
-        explicacion:"Frase larga con varias palabras. Nombre y año de nacimiento son lo primero que prueba un atacante."
+        explicacion:"Frase larga de varias palabras. Nombre y año de nacimiento son lo primero que prueba un atacante."
       }
     ],
 
@@ -759,45 +916,112 @@
       }
     ],
 
-    vf: [
-      { frase:"Si tengo antivirus, no necesito tener más cuidado.", correcta:false,
-        explicacion:"El antivirus ayuda, pero no detiene un engaño: el error humano sigue siendo el mayor riesgo." },
-      { frase:"Puedo entrar a mi banco desde un wifi público sin problema.", correcta:false,
-        explicacion:"Las redes abiertas pueden ser vigiladas. Mejor usa tus datos móviles." },
-      { frase:"La verificación en dos pasos agrega una capa extra de protección.", correcta:true,
-        explicacion:"Aunque alguien tenga tu clave, también necesitaría tu segundo paso." },
-      { frase:"Puedo usar la misma contraseña en todas mis cuentas si es muy larga.", correcta:false,
-        explicacion:"Si se filtra en un sitio, quedan expuestas todas tus cuentas." },
-      { frase:"Los mensajes con faltas de ortografía y mucha urgencia suelen ser sospechosos.", correcta:true,
-        explicacion:"Los estafadores buscan que actúes sin pensar. Detente y verifica." },
-      { frase:"Un candado en la barra del navegador significa que la página es 100 % confiable.", correcta:false,
-        explicacion:"Significa que la conexión está cifrada, pero una página falsa también puede tenerlo." },
-      { frase:"Mantener mis aplicaciones actualizadas ayuda a cerrar puertas a los atacantes.", correcta:true,
-        explicacion:"Las actualizaciones corrigen fallos de seguridad conocidos." }
+    que_harias: [
+      {
+        situacion:"Un compañero te escribe por WhatsApp: «Oye, pásame el código que te acaba de llegar por SMS, es para recuperar mi cuenta».",
+        opciones:[
+          { t:"No lo comparto y le llamo por teléfono", ok:true },
+          { t:"Se lo mando, es mi amigo", ok:false, fallo:"Ese código es la segunda llave de tu cuenta: con él pueden entrar sin tu contraseña." },
+          { t:"Le mando una captura del mensaje", ok:false, fallo:"La captura también muestra el código. Ese mensaje suele venir de una cuenta robada." }
+        ],
+        explicacion:"El código de verificación es una llave, no un dato para compartir. Si de verdad es tu amigo, una llamada lo aclara en segundos."
+      },
+      {
+        situacion:"Instalaste un juego «gratis» y desde entonces la laptop va lenta y abre anuncios sola.",
+        opciones:[
+          { t:"Paso el antivirus y desinstalo el juego", ok:true },
+          { t:"Reinicio la laptop y sigo usándola", ok:false, fallo:"Reiniciar no quita el programa: los anuncios vuelven a los pocos minutos." },
+          { t:"Espero a que se arregle solo", ok:false, fallo:"El software malicioso no se va solo; suele pedir más permisos con el tiempo." }
+        ],
+        explicacion:"Un juego pirata es una vía común de malware. Analiza el equipo, desinstala y cambia la contraseña si usabas la misma en otros sitios."
+      },
+      {
+        situacion:"Te llega un SMS «del banco»: «Tu cuenta será bloqueada. Confirma tus datos aquí».",
+        opciones:[
+          { t:"Entro por la app oficial del banco", ok:true },
+          { t:"Toco el enlace porque parece del banco", ok:false, fallo:"El enlace puede llevar a una copia de la página del banco que se queda con tu clave." },
+          { t:"Llamo al número que aparece en el SMS", ok:false, fallo:"Ese número lo controla quien envió el mensaje, no el banco." }
+        ],
+        explicacion:"Los enlaces y teléfonos de un mensaje los controla quien lo envía. Entra siempre por la app o escribiendo la dirección oficial."
+      },
+      {
+        situacion:"Encuentras una memoria USB en el estacionamiento de la universidad.",
+        opciones:[
+          { t:"No la conecto y la entrego en soporte", ok:true },
+          { t:"La conecto un momento para ver de quién es", ok:false, fallo:"Una USB puede ejecutar código con solo conectarla: es un clásico del ataque dirigido." },
+          { t:"La formateo y me la quedo", ok:false, fallo:"Para formatearla hay que conectarla primero, y el riesgo ya ocurrió." }
+        ],
+        explicacion:"Nunca conectes una USB que no sea tuya. Enchufarla ya puede infectar el equipo, sin que abras ningún archivo."
+      },
+      {
+        situacion:"Estás en un centro comercial y quieres revisar la cuenta del banco desde el wifi abierto.",
+        opciones:[
+          { t:"Uso mis datos móviles", ok:true },
+          { t:"Entro igual: tengo antivirus", ok:false, fallo:"El antivirus no protege lo que viaja por una red que no controlas." },
+          { t:"Le pido la clave al mesero y entro", ok:false, fallo:"La clave del local no cifra tu conexión ni impide que otro lea el tráfico." }
+        ],
+        explicacion:"En una red abierta, otro puede leer lo que envías. Para cuentas importantes, usa datos móviles."
+      },
+      {
+        situacion:"Recursos Humanos te pide por correo tu contraseña para «migrar tu cuenta al sistema nuevo».",
+        opciones:[
+          { t:"No la doy y aviso a soporte", ok:true },
+          { t:"La mando: el correo es interno", ok:false, fallo:"Ningún área legítima pide tu contraseña, y el remitente puede estar suplantado." },
+          { t:"La cambio y luego la mando", ok:false, fallo:"Al enviarla, la nueva también queda expuesta." }
+        ],
+        explicacion:"Nadie con legitimidad necesita tu contraseña. Si el correo parece interno, verifícalo por otro canal."
+      },
+      {
+        situacion:"Te llama alguien que dice ser del soporte técnico y pide acceso remoto a tu computadora.",
+        opciones:[
+          { t:"Cuelgo y llamo yo al número oficial", ok:true },
+          { t:"Le doy acceso: dice ser de soporte", ok:false, fallo:"Con acceso remoto puede instalar programas, copiar archivos y pedir pagos." },
+          { t:"Le mando una captura de mi pantalla", ok:false, fallo:"La captura puede mostrar correos, nombres y datos que no deben salir de tu equipo." }
+        ],
+        explicacion:"El soporte real no llama por sorpresa ni pide control de tu equipo. Si dudas, cuelga y llama tú al número oficial."
+      }
     ]
   };
 
   var HACKS = [
     {
       titulo:"TUS ARCHIVOS HAN SIDO CIFRADOS",
-      sub:"Tienes 00:00:03 para pagar o se perderán",
+      sub:"Tienes 6 segundos antes de perderlo todo",
+      pregunta:"¿Qué haces?",
       ataque:"Ransomware",
       intro:"Un programa malicioso cifra tus archivos y pide dinero para devolverlos.",
-      consejos:["Haz copias de seguridad.", "No abras archivos ni enlaces dudosos.", "No pagues: avisa a soporte."]
+      consejos:["Haz copias de seguridad.", "No abras archivos ni enlaces dudosos.", "No pagues: avisa a soporte."],
+      opciones:[
+        { t:"Pagar el rescate", ok:false, fallo:"Pagar financia al atacante y no garantiza que devuelva nada." },
+        { t:"Desconectar y avisar a soporte", ok:true },
+        { t:"Reiniciar hasta que se arregle", ok:false, fallo:"Reiniciar no descifra los archivos y puede borrar pistas para recuperarlos." }
+      ]
     },
     {
       titulo:"¡VIRUS DETECTADO!",
-      sub:"Llama ya al número 800-000-0000 (ficticio)",
+      sub:"Llama ya al 800-000-0000 (ficticio)",
+      pregunta:"La ventana no se cierra. ¿Qué haces?",
       ataque:"Estafa de falso soporte técnico",
       intro:"Una ventana falsa asusta para que llames y entregues datos o dinero.",
-      consejos:["Cierra la ventana; no llames.", "Ningún navegador te pide llamar por un virus.", "Si dudas, apaga y vuelve a abrir."]
+      consejos:["Cierra la ventana; no llames.", "Ningún navegador te pide llamar por un virus.", "Si dudas, apaga y vuelve a abrir."],
+      opciones:[
+        { t:"Llamar al número de la pantalla", ok:false, fallo:"Al otro lado pedirán datos o un pago para «limpiar» un virus que no existe." },
+        { t:"Cerrar la ventana", ok:true },
+        { t:"Descargar el «limpiador» que ofrece", ok:false, fallo:"Ese descargable suele ser el malware real." }
+      ]
     },
     {
       titulo:"TU CUENTA FUE BLOQUEADA",
       sub:"Ingresa tus datos para recuperarla",
+      pregunta:"El aviso pide tus datos. ¿Qué haces?",
       ataque:"Phishing / robo de cuenta",
       intro:"Una página clon imita el inicio de sesión para quedarse con tu clave.",
-      consejos:["No escribas tus datos en páginas a las que llegaste por un aviso.", "Entra siempre por la dirección oficial.", "Activa la verificación en dos pasos."]
+      consejos:["No escribas tus datos en páginas a las que llegaste por un aviso.", "Entra siempre por la dirección oficial.", "Activa la verificación en dos pasos."],
+      opciones:[
+        { t:"Escribir mis datos en el formulario", ok:false, fallo:"Ese formulario envía tu usuario y tu clave directamente al atacante." },
+        { t:"Entrar por la dirección oficial", ok:true },
+        { t:"Responder al correo con mi clave", ok:false, fallo:"Nadie legítimo pide la clave por correo." }
+      ]
     }
   ];
 
@@ -820,19 +1044,24 @@
   var counterP   = document.getElementById("counter-p");
 
   var state = {
-    mode: "idle",        // idle | spinning | reveal | challenge | result | hack | prize
+    mode: "idle",        // idle | spinning | reveal | challenge | result | hack | hack-result | prize
     casilla: null,
     reto: null,
     vista: null,
     result: null,
     rot: 0,
     decks: {},
+    lastReto: {},
     lastCasilla: -1,
     timers: [],
     raf: 0,
     timerOn: false,
-    timerId: null,
-    hackTick: null,
+    timerRoot: null,
+    nextTick: null,
+    hack: null,
+    hackVista: null,
+    hackElegido: -1,
+    hackTimeout: false,
     lock: 0,
     lastAction: Date.now(),
     counters: { p: 0, a: 0 },
@@ -942,6 +1171,12 @@
     el("op-a").textContent = state.counters.a;
   }
 
+  function bumpContador() {
+    counterP.classList.remove("bump");
+    void counterP.offsetWidth;
+    counterP.classList.add("bump");
+  }
+
   /* ============================================================
      CONSTRUCCIÓN DE LA RULETA
      ============================================================ */
@@ -1015,53 +1250,63 @@
 
   function siguienteReto(id) {
     if (!state.decks[id] || state.decks[id].length === 0) {
-      state.decks[id] = shuffle(RETOS[id].map(function (_, i) { return i; }));
+      var deck = shuffle(RETOS[id].map(function (_, i) { return i; }));
+      // Al rebarajar, evita que salga primero el mismo reto que se acaba de ver.
+      if (deck.length > 1 && state.lastReto[id] === deck[deck.length - 1]) {
+        var t = deck[deck.length - 1];
+        deck[deck.length - 1] = deck[0];
+        deck[0] = t;
+      }
+      state.decks[id] = deck;
     }
-    return state.decks[id].pop();
+    var idx = state.decks[id].pop();
+    state.lastReto[id] = idx;
+    return idx;
   }
 
   /* ============================================================
      CRONÓMETRO
      ============================================================ */
-  function startTimer(segundos, onEnd) {
+  function startTimer(segundos, onEnd, rootId) {
     stopTimer();
-    var bar = el("timer");
-    var fill = bar ? bar.querySelector(".timer-fill") : null;
-    var num = bar ? bar.querySelector(".timer-num") : null;
+    var root = el(rootId || "timer");
+    if (!root) return;
+    var fill = root.querySelector(".timer-fill");
+    var num = root.querySelector(".timer-num");
     if (!fill || !num) return;
 
     var total = segundos * 1000;
     var t0 = (window.performance ? performance.now() : Date.now());
+    var ultimo = -1;
     state.timerOn = true;
+    state.timerRoot = root;
 
     function step(now) {
       if (!state.timerOn) return;
       var left = Math.max(0, total - (now - t0));
-      var f = left / total;
-      fill.style.width = (f * 100) + "%";
-      num.textContent = Math.ceil(left / 1000);
-      bar.classList.toggle("warn", left <= 7000 && left > 3000);
-      bar.classList.toggle("danger", left <= 3000);
+      fill.style.width = ((left / total) * 100) + "%";
+      var s = Math.ceil(left / 1000);
+      if (s !== ultimo) { num.textContent = s; ultimo = s; }
+      root.classList.toggle("warn", left <= 7000 && left > 3000);
+      root.classList.toggle("danger", left <= 3000);
+      if (left <= 0) {
+        state.timerOn = false;
+        onEnd();
+        return;
+      }
       state.raf = requestAnimationFrame(step);
     }
     state.raf = requestAnimationFrame(step);
-
-    state.timerId = later(segundos * 1000 + 30, function () {
-      if (state.timerOn && state.mode === "challenge") onEnd();
-    });
   }
 
   function stopTimer() {
     state.timerOn = false;
     if (state.raf) cancelAnimationFrame(state.raf);
     state.raf = 0;
-    if (state.timerId) {
-      clearTimeout(state.timerId);
-      state.timers = state.timers.filter(function (x) { return x !== state.timerId; });
-      state.timerId = null;
+    if (state.timerRoot) {
+      state.timerRoot.classList.remove("warn", "danger");
+      state.timerRoot = null;
     }
-    var bar = el("timer");
-    if (bar) { bar.classList.remove("warn", "danger"); }
   }
 
   /* ============================================================
@@ -1116,19 +1361,23 @@
           responder(!!state.vista[i2].correct, false);
         });
       }
-    } else if (c.id === "vf") {
-      var vfBtns = body.querySelectorAll("[data-v]");
-      for (var m = 0; m < vfBtns.length; m++) {
-        vfBtns[m].addEventListener("click", function () {
-          var v = this.getAttribute("data-v") === "1";
-          state.result = { valor: v };
-          responder(v === state.reto.correcta, false);
+    } else if (c.id === "que_harias") {
+      var qBtns = body.querySelectorAll("[data-q]");
+      for (var m = 0; m < qBtns.length; m++) {
+        qBtns[m].addEventListener("click", function () {
+          var i3 = parseInt(this.getAttribute("data-q"), 10);
+          state.result = { indice: i3 };
+          responder(!!state.vista[i3].correct, false);
         });
       }
     }
 
-    startTimer(c.tiempo, function () {
-      if (state.mode === "challenge") responder(false, true);
+    // El cronómetro arranca medio segundo después de que se pinte el reto.
+    later(500, function () {
+      if (state.mode !== "challenge") return;
+      startTimer(c.tiempo, function () {
+        if (state.mode === "challenge") responder(false, true);
+      });
     });
   }
 
@@ -1159,7 +1408,7 @@
           '<span class="pass">' + v.texto + '</span>' +
         '</button>';
       }).join("");
-      return '<div class="hintline">¿Cuál es la más segura?</div>' +
+      return '<div class="hintline">¿Cuál tarda más en romperse?</div>' +
         '<div class="pcards">' + cards + '</div>';
     }
 
@@ -1168,56 +1417,99 @@
         return { texto: o, correct: i === r.correcta };
       }));
       var b = state.vista.map(function (v, i) {
-        return '<button class="btn" data-i="' + i + '">' + v.texto + '</button>';
+        return '<button class="btn" data-i="' + i + '">' + iconoAtaque(v.texto) + v.texto + '</button>';
       }).join("");
       return '<div class="situation">' + ICON.lupa + '<span>' + r.situacion + '</span></div>' +
-        '<div class="answers">' + b + '</div>';
+        '<div class="answers three">' + b + '</div>';
     }
 
-    // vf
-    return '<div class="phrase big">«' + r.frase + '»</div>' +
-      '<div class="answers">' +
-        '<button class="btn ok" data-v="1">' + ICON.check + ' VERDADERO</button>' +
-        '<button class="btn bad" data-v="0">' + ICON.x + ' FALSO</button>' +
-      '</div>';
+    // que_harias
+    state.vista = shuffle(r.opciones.map(function (o) {
+      return { texto: o.t, correct: !!o.ok, fallo: o.fallo || "" };
+    }));
+    var q = state.vista.map(function (v, i) {
+      return '<button class="btn" data-q="' + i + '">' + v.texto + '</button>';
+    }).join("");
+    return '<div class="situation">' + ICON.cursor + '<span>' + r.situacion + '</span></div>' +
+      '<div class="answers three">' + q + '</div>';
+  }
+
+  function aplicaResaltes(texto, campo, resaltes, modo) {
+    if (modo !== "result" || !resaltes) return texto;
+    var marcas = [];
+    for (var i = 0; i < resaltes.length; i++) {
+      var m = resaltes[i];
+      if (m.c !== campo) continue;
+      var pos = texto.indexOf(m.t);
+      if (pos >= 0) marcas.push({ pos: pos, len: m.t.length, n: i + 1 });
+    }
+    if (!marcas.length) return texto;
+    marcas.sort(function (a, b) { return a.pos - b.pos; });
+
+    var out = "";
+    var cursor = 0;
+    for (var j = 0; j < marcas.length; j++) {
+      var k = marcas[j];
+      if (k.pos < cursor) continue;
+      out += texto.slice(cursor, k.pos);
+      out += '<span class="hl">' + texto.slice(k.pos, k.pos + k.len) + '<b>' + k.n + '</b></span>';
+      cursor = k.pos + k.len;
+    }
+    return out + texto.slice(cursor);
   }
 
   function tarjetaMensaje(r, modo) {
-    var marca = function (campo) {
-      return (modo === "result" && r.marcas && r.marcas.indexOf(campo) >= 0) ? "mk" : "";
+    var campo = function (nombre) {
+      return aplicaResaltes(r[nombre] || "", nombre, r.resaltes, modo);
     };
     var cls = "msg" + (modo === "result" && r.correcta === "fraude" ? " suspicious" : "");
+    var sello = "";
+    if (modo === "result") {
+      var esReal = r.correcta === "real";
+      sello = '<span class="stamp' + (esReal ? " ok" : "") + '">' + (esReal ? "REAL" : "FRAUDE") + '</span>';
+    }
     var head = "";
 
     if (r.formato === "correo") {
       head =
         '<div class="msg-head">' +
           '<span class="chip">' + (r.chip || "Correo electrónico") + '</span>' +
-          '<div class="msg-line"><span class="k">De</span><span class="' + marca("de") + '">' + r.de + '</span></div>' +
-          '<div class="msg-line"><span class="k">Asunto</span><span class="' + marca("asunto") + '">' + r.asunto + '</span></div>' +
+          '<div class="msg-line"><span class="k">De</span><span>' + campo("de") + '</span></div>' +
+          '<div class="msg-line"><span class="k">Asunto</span><span>' + campo("asunto") + '</span></div>' +
         '</div>' +
-        '<div class="msg-body"><span class="' + marca("cuerpo") + '">' + r.cuerpo + '</span></div>';
+        '<div class="msg-body">' + campo("cuerpo") + '</div>';
     } else {
       head =
         '<div class="msg-head"><span class="chip">' + (r.chip || r.formato) + '</span>' +
-          '<div class="msg-line"><span class="' + marca("de") + '">' + r.de + '</span></div>' +
+          '<div class="msg-line"><span>' + campo("de") + '</span></div>' +
         '</div>' +
-        '<div class="msg-body bubble"><span class="' + marca("cuerpo") + '">' + r.cuerpo + '</span></div>';
+        '<div class="msg-body bubble">' + campo("cuerpo") + '</div>';
     }
-    return '<div class="' + cls + '">' + head + '</div>';
+    return '<div class="msg-wrap"><div class="' + cls + '">' + head + '</div>' + sello + '</div>';
   }
 
   function tarjetaAlerta(r, modo, elegida) {
+    var n = 0;
     var zonas = r.zonas.map(function (z, i) {
       var cls = "zone";
+      var badge = "";
       if (modo === "result") {
-        if (z.esSenal) cls += " is-senal";
-        if (i === elegida) cls += z.esSenal ? " picked-ok" : " picked-bad";
+        if (z.esSenal) {
+          n += 1;
+          cls += " is-senal";
+          badge = '<span class="zbadge">' + n + '</span>';
+        }
+        if (i === elegida) {
+          cls += z.esSenal ? " picked-ok" : " picked-bad";
+          if (!z.esSenal) badge = '<span class="zbadge">✗</span>';
+          badge += '<span class="you">TÚ</span>';
+        }
       }
       return '<button class="' + cls + '" data-z="' + i + '"' +
         (modo === "result" ? " disabled" : "") + '>' +
         '<span class="zk">' + z.k + '</span>' +
         '<span class="zt">' + z.t + '</span>' +
+        badge +
       '</button>';
     }).join("");
 
@@ -1256,6 +1548,49 @@
     return '<div class="banner bad">' + ICON.x + ' Casi. Mira por qué:</div>';
   }
 
+  function accionesHTML() {
+    return '<div class="actions">' +
+      '<div class="autonext">Continúa solo en <b id="autonext-n">15</b> s</div>' +
+      '<button class="btn solid" id="btn-next">SIGUIENTE ' + ICON.next + '</button>' +
+    '</div>';
+  }
+
+  function finalizaResultado() {
+    var next = el("btn-next");
+    if (!next) return;
+    next.addEventListener("click", function () {
+      if (locked()) return;
+      showPrize();
+    });
+    var t = 15;
+    var n = el("autonext-n");
+    state.nextTick = setInterval(function () {
+      t -= 1;
+      if (n) n.textContent = Math.max(0, t);
+      if (t <= 0) {
+        clearInterval(state.nextTick);
+        state.nextTick = null;
+        if (state.mode === "result") showPrize();
+      }
+    }, 1000);
+  }
+
+  function iconoAtaque(nombre) {
+    var mapa = {
+      "phishing": "hook",
+      "ransomware": "lock",
+      "fuerza bruta": "key",
+      "suplantación": "user",
+      "malware": "skull",
+      "red pública": "wifi"
+    };
+    var k = nombre.toLowerCase();
+    for (var clave in mapa) {
+      if (k.indexOf(clave) >= 0) return ICON[mapa[clave]];
+    }
+    return ICON.lupa;
+  }
+
   function renderResultado(acierto, tiempoAgotado) {
     var c = CASILLAS[state.casilla];
     var r = state.reto;
@@ -1269,25 +1604,31 @@
         return '<div class="sig ' + (r.correcta === "real" ? "real" : "") + '">' +
           '<span class="n">' + (i + 1) + '</span><span>' + s + '</span></div>';
       }).join("");
-      var veredicto = r.correcta === "fraude" ? "Este mensaje es un fraude." : "Este mensaje es real.";
       body.innerHTML =
         tarjetaMensaje(r, "result") +
         '<div class="signals">' + lista + '</div>' +
-        '<div class="actions"><button class="btn solid" id="btn-next">SIGUIENTE ' + ICON.next + '</button></div>';
+        accionesHTML();
     }
 
     else if (c.id === "alerta") {
       var elegida = state.result ? state.result.zona : -1;
-      var motivos = r.zonas.map(function (z, i) {
+      var n = 0;
+      var motivos = r.zonas.map(function (z) {
         if (!z.esSenal) return "";
-        return '<div class="sig"><span class="n">' + (i + 1) + '</span><span><b>' + z.k + ':</b> ' + z.motivo + '</span></div>';
+        n += 1;
+        return '<div class="sig"><span class="n">' + n + '</span><span><b>' + z.k + ':</b> ' + z.motivo + '</span></div>';
       }).join("");
+      var nota = "";
+      if (elegida >= 0 && !r.zonas[elegida].esSenal) {
+        nota = '<div class="sig"><span class="n">✗</span><span><b>Pulsaste «' +
+          r.zonas[elegida].k + '»:</b> ' + r.zonas[elegida].motivo + '. Era una parte normal.</span></div>';
+      }
       body.innerHTML =
         '<div class="res-grid">' +
           tarjetaAlerta(r, "result", elegida) +
-          '<div class="signals">' + motivos + '</div>' +
+          '<div class="signals">' + motivos + nota + '</div>' +
         '</div>' +
-        '<div class="actions"><button class="btn solid" id="btn-next">SIGUIENTE ' + ICON.next + '</button></div>';
+        accionesHTML();
     }
 
     else if (c.id === "password") {
@@ -1301,7 +1642,7 @@
           '<span class="letter">' + ["A", "B", "C"][i] + '</span>' +
           (v.correct ? '<span class="tag">✓ La más segura</span>' : "") +
           '<span class="pass">' + v.texto + '</span>' +
-          '<div class="strength"><i class="s-' + h.cls + '" style="width:' + h.pct + '%"></i></div>' +
+          '<div class="strength"><i class="s-' + h.cls + '" data-pct="' + h.pct + '" style="width:0%"></i></div>' +
           '<div class="ptime">Tiempo estimado para descifrarla<b>' + v.tiempo + '</b></div>' +
         '</div>';
       }).join("");
@@ -1309,7 +1650,17 @@
         '<div class="pcards">' + tarjetas + '</div>' +
         '<div class="explain">' + r.explicacion + '</div>' +
         '<div class="note">Tiempos ilustrativos</div>' +
-        '<div class="actions"><button class="btn solid" id="btn-next">SIGUIENTE ' + ICON.next + '</button></div>';
+        accionesHTML();
+
+      // La barra de fortaleza se llena al aparecer, como un descifrado.
+      var barras = body.querySelectorAll(".strength i");
+      for (var bi = 0; bi < barras.length; bi++) {
+        (function (barra, delay) {
+          later(160 + delay, function () {
+            barra.style.width = barra.getAttribute("data-pct") + "%";
+          });
+        })(barras[bi], bi * 170);
+      }
     }
 
     else if (c.id === "ataque") {
@@ -1318,35 +1669,40 @@
         var cls = "btn";
         if (v.correct) cls += " ok";
         else if (i === elegidoA) cls += " bad";
-        return '<div class="' + cls + '" style="cursor:default">' + v.texto + '</div>';
+        return '<div class="' + cls + '" style="cursor:default">' + iconoAtaque(v.texto) + v.texto + '</div>';
       }).join("");
       body.innerHTML =
         '<div class="situation">' + ICON.lupa + '<span>' + r.situacion + '</span></div>' +
-        '<div class="answers">' + opciones + '</div>' +
+        '<div class="answers three">' + opciones + '</div>' +
         '<div class="definition">' +
           '<h2>' + r.opciones[r.correcta] + '</h2>' +
           '<p>' + r.definicion + '</p>' +
           '<p class="prot"><b>Cómo protegerte:</b> ' + r.proteccion + '</p>' +
         '</div>' +
-        '<div class="actions"><button class="btn solid" id="btn-next">SIGUIENTE ' + ICON.next + '</button></div>';
+        accionesHTML();
     }
 
-    else { // vf
+    else if (c.id === "que_harias") {
+      var elegidoQ = state.result ? state.result.indice : -1;
+      var opcionesQ = state.vista.map(function (v, i) {
+        var cls = "btn";
+        if (v.correct) cls += " ok";
+        else if (i === elegidoQ) cls += " bad";
+        return '<div class="' + cls + '" style="cursor:default">' + v.texto + '</div>';
+      }).join("");
+      var tocada = elegidoQ >= 0 ? state.vista[elegidoQ] : null;
+      var notaQ = (tocada && !tocada.correct && tocada.fallo)
+        ? '<div class="q-line" style="color:#FFB3B3"><b>Lo que elegiste:</b> ' + tocada.fallo + '</div>'
+        : "";
       body.innerHTML =
-        '<div class="phrase big">«' + r.frase + '»</div>' +
-        '<div class="explain" style="text-align:center;font-size:44px">La respuesta es <b style="color:' +
-          (r.correcta ? "#2ECC71" : "#FF4D4D") + '">' + (r.correcta ? "VERDADERO" : "FALSO") + '</b>.</div>' +
-        '<div class="explain">' + r.explicacion + '</div>' +
-        '<div class="actions"><button class="btn solid" id="btn-next">SIGUIENTE ' + ICON.next + '</button></div>';
+        '<div class="q-summary">' + r.situacion + '</div>' +
+        '<div class="answers three">' + opcionesQ + '</div>' +
+        notaQ +
+        '<div class="q-line"><b>La acción segura:</b> ' + r.explicacion + '</div>' +
+        accionesHTML();
     }
 
-    var next = el("btn-next");
-    if (next) {
-      next.addEventListener("click", function () {
-        if (locked()) return;
-        showPrize();
-      });
-    }
+    finalizaResultado();
   }
 
   function fuerza(tiempo) {
@@ -1362,66 +1718,126 @@
     state.mode = "hack";
     state.result = null;
     state.lastCorrect = null;
+    state.hackElegido = -1;
+    state.hackTimeout = false;
     stage.classList.add("hacked");
 
     var h = HACKS[Math.floor(Math.random() * HACKS.length)];
-    showScreen("screen-hack");
+    state.hack = h;
+    state.hackVista = shuffle(h.opciones.map(function (o) {
+      return { t: o.t, ok: !!o.ok, fallo: o.fallo || "" };
+    }));
 
+    renderHackAlarma();
+  }
+
+  function renderHackAlarma() {
+    var h = state.hack;
     var scr = el("screen-hack");
+    var botones = state.hackVista.map(function (o, i) {
+      return '<button class="btn" data-h="' + i + '">' + o.t + '</button>';
+    }).join("");
+
     scr.innerHTML =
-      '<div class="hack-a" id="hack-a">' +
+      '<div class="hack-a shake">' +
         '<h1>' + h.titulo + '</h1>' +
         '<div class="sub">' + h.sub + '</div>' +
-        '<div class="bar"><i id="hack-bar"></i></div>' +
-        '<div class="pct" id="hack-pct">cifrando… 0%</div>' +
-        '<div class="sub" id="hack-cd" style="font-size:52px">00:00:03</div>' +
+        '<div class="pct" style="color:#FF9C9C;font-size:40px">' + h.pregunta + '</div>' +
+        '<div class="hack-actions">' + botones + '</div>' +
+        '<div class="timer" id="hack-timer">' +
+          '<div class="timer-bar"><div class="timer-fill"></div></div>' +
+          '<div class="timer-num">6</div>' +
+        '</div>' +
       '</div>';
 
-    var bar = el("hack-bar");
-    var pct = el("hack-pct");
-    later(60, function () { bar.style.width = "63%"; });
+    var btns = scr.querySelectorAll("[data-h]");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].addEventListener("click", function () {
+        var k = parseInt(this.getAttribute("data-h"), 10);
+        hackResponder(!!state.hackVista[k].ok, false, k);
+      });
+    }
 
-    var n = 0;
-    var tick = setInterval(function () {
-      n = Math.min(63, n + 7);
-      pct.textContent = "cifrando… " + n + "%";
-    }, 140);
-    state.hackTick = tick;
+    showScreen("screen-hack");
+    setLock(300);
+    startTimer(6, function () {
+      if (state.mode === "hack") hackResponder(false, true, -1);
+    }, "hack-timer");
+  }
 
-    later(1000, function () { var cd = el("hack-cd"); if (cd) cd.textContent = "00:00:02"; });
-    later(2000, function () { var cd = el("hack-cd"); if (cd) cd.textContent = "00:00:01"; });
-    later(2900, function () { var cd = el("hack-cd"); if (cd) cd.textContent = "00:00:00"; });
+  function hackResponder(ok, tiempoAgotado, elegido) {
+    if (locked()) return;
+    if (state.mode !== "hack") return;
+    stopTimer();
 
-    later(3000, function () {
-      clearInterval(tick);
-      state.hackTick = null;
-      beep(140, 0.3, "sawtooth", 0.06);
-      scr.innerHTML =
-        '<div class="hack-b">' +
-          ICON.shield +
-          '<h1>TRANQUILO. ES UNA SIMULACIÓN.</h1>' +
-          '<p>Esto le pasa a miles de personas cada día.</p>' +
-        '</div>';
+    state.mode = "hack-result";
+    state.lastCorrect = ok;
+    state.hackElegido = elegido;
+    state.hackTimeout = !!tiempoAgotado;
+    if (ok) beep(880, 0.14, "sine", 0.06);
+    else beep(170, 0.25, "triangle", 0.06);
+
+    el("screen-hack").innerHTML =
+      '<div class="hack-b">' + ICON.shield +
+        '<h1>TRANQUILO. ES UNA SIMULACIÓN.</h1>' +
+        '<p>Esto le pasa a miles de personas cada día.</p>' +
+      '</div>';
+
+    later(1400, function () {
+      if (state.mode === "hack-result") renderHackExplicacion();
+    });
+  }
+
+  function renderHackExplicacion() {
+    var h = state.hack;
+    var ok = !!state.lastCorrect;
+    var elegido = state.hackElegido;
+
+    var banner = ok
+      ? '<div class="banner ok">' + ICON.check + ' ¡Bien! No caíste</div>'
+      : (state.hackTimeout
+        ? '<div class="banner warn">' + ICON.clock + ' Se acabó el tiempo. Mira lo que pasaba:</div>'
+        : '<div class="banner bad">' + ICON.x + ' Caíste en la trampa</div>');
+
+    var fallo = "";
+    if (!ok && elegido >= 0) {
+      fallo = '<p class="intro" style="color:#FFB3B3"><b>Lo que elegiste:</b> «' +
+        state.hackVista[elegido].t + '». ' + state.hackVista[elegido].fallo + '</p>';
+    }
+
+    var buena = null;
+    for (var bi = 0; bi < state.hackVista.length; bi++) {
+      if (state.hackVista[bi].ok) { buena = state.hackVista[bi]; break; }
+    }
+    var acierto = buena
+      ? '<p class="intro" style="color:#8CF3B4"><b>La decisión segura era:</b> «' + buena.t + '».</p>'
+      : "";
+
+    var consejos = h.consejos.map(function (t, i) {
+      return '<div class="tip-card"><span class="n">' + (i + 1) + '</span><span>' + t + '</span></div>';
+    }).join("");
+
+    el("screen-hack").innerHTML =
+      '<div class="hack-c">' +
+        banner +
+        '<h2>¿Qué acabas de ver?</h2>' +
+        '<p class="atk">' + h.ataque + '</p>' +
+        '<p class="intro">' + h.intro + '</p>' +
+        acierto +
+        fallo +
+        '<div class="tips">' + consejos + '</div>' +
+        '<div style="display:flex;justify-content:center;padding-top:6px">' +
+          '<button class="btn solid" id="btn-hack-next">SIGUIENTE ' + ICON.next + '</button>' +
+        '</div>' +
+      '</div>';
+
+    el("btn-hack-next").addEventListener("click", function () {
+      if (locked()) return;
+      showPrize();
     });
 
-    later(5000, function () {
-      var consejos = h.consejos.map(function (t, i) {
-        return '<div class="tip-card"><span class="n">' + (i + 1) + '</span><span>' + t + '</span></div>';
-      }).join("");
-      scr.innerHTML =
-        '<div class="hack-c">' +
-          '<h2>¿Qué acabas de ver?</h2>' +
-          '<p class="atk">' + h.ataque + '</p>' +
-          '<p class="intro">' + h.intro + '</p>' +
-          '<div class="tips">' + consejos + '</div>' +
-          '<div class="actions" style="justify-content:center;padding-top:10px">' +
-            '<button class="btn solid" id="btn-hack-next">SIGUIENTE ' + ICON.next + '</button>' +
-          '</div>' +
-        '</div>';
-      el("btn-hack-next").addEventListener("click", function () {
-        if (locked()) return;
-        showPrize();
-      });
+    later(20000, function () {
+      if (state.mode === "hack-result") showPrize();
     });
   }
 
@@ -1432,7 +1848,7 @@
     if (state.mode === "prize") return;
     clearLater();
     stopTimer();
-    if (state.hackTick) { clearInterval(state.hackTick); state.hackTick = null; }
+    if (state.nextTick) { clearInterval(state.nextTick); state.nextTick = null; }
     state.mode = "prize";
     stage.classList.remove("hacked");
 
@@ -1440,12 +1856,13 @@
     if (state.lastCorrect) state.counters.a += 1;
     guardaContador();
     pintaContador();
+    bumpContador();
 
     var tip = TIPS[Math.floor(Math.random() * TIPS.length)];
     el("prize-content").innerHTML =
       '<div class="prize-icon">' + ICON.shield + '</div>' +
       '<h2>¡LISTO! RECOGE TU PREMIO<br>Y TU TARJETA DE CONSEJOS</h2>' +
-      '<p class="sub">' + (state.lastCorrect ? "¡Premio extra por acertar!" : "") + '</p>' +
+      '<p class="sub">' + (state.lastCorrect ? "¡Acertaste!" : "Nadie nace sabiendo: llévate la tarjeta de consejos.") + '</p>' +
       '<div class="tip"><span class="lbl2">Consejo del día</span>' + tip + '</div>' +
       '<button class="btn solid" id="btn-again">VOLVER A GIRAR</button>';
 
@@ -1457,7 +1874,7 @@
       resetAll();
     });
 
-    later(9500, function () {
+    later(12000, function () {
       if (state.mode === "prize") resetAll();
     });
   }
@@ -1468,13 +1885,17 @@
   function resetAll() {
     clearLater();
     stopTimer();
-    if (state.hackTick) { clearInterval(state.hackTick); state.hackTick = null; }
+    if (state.nextTick) { clearInterval(state.nextTick); state.nextTick = null; }
     state.mode = "idle";
     state.casilla = null;
     state.reto = null;
     state.vista = null;
     state.result = null;
     state.lastCorrect = null;
+    state.hack = null;
+    state.hackVista = null;
+    state.hackElegido = -1;
+    state.hackTimeout = false;
     state.lastAction = Date.now();
     reveal.classList.remove("show");
     stage.classList.remove("hacked");
@@ -1508,7 +1929,7 @@
     if (state.mode === "challenge") { responder(false, true); return; }
     if (state.mode === "result") { showPrize(); return; }
     if (state.mode === "prize") { resetAll(); return; }
-    if (state.mode === "hack") { showPrize(); }
+    if (state.mode === "hack" || state.mode === "hack-result") { showPrize(); }
   }
 
   document.addEventListener("keydown", function (e) {
