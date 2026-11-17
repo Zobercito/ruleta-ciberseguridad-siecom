@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Gira y Detecta · Ciberseguridad CIIECOM UP</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --bg:#0A1428;
+    --panel:#12213F;
+    --panel-2:#1A2D54;
+    --blue:#2D8CFF;
+    --cyan:#6FD3FF;
+    --text:#FFFFFF;
+    --text-2:#B8C7E0;
+    --ok:#2ECC71;
+    --bad:#FF4D4D;
+    --warn:#FFC83D;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html, body{
+    margin:0; padding:0; width:100%; height:100%;
+    overflow:hidden; background:#04070d; color:var(--text);
+    font-family:"Segoe UI", Arial, Helvetica, sans-serif;
+    -webkit-user-select:none; user-select:none;
+    cursor:default;
+  }
+
+  body.nocursor{ cursor:none; }
+
+  /* Lienzo fijo 1920x1080 escalado a la ventana */
+  #stage{
+    position:absolute; left:50%; top:50%;
+    width:1920px; height:1080px;
+    transform-origin:50% 50%;
+    transform:translate(-50%,-50%) scale(1);
+    overflow:hidden;
+    display:flex; flex-direction:column;
+    background:radial-gradient(ellipse at 50% 0%, #0f2144 0%, var(--bg) 55%, #060d1c 100%);
+    box-shadow:0 0 80px rgba(0,0,0,.85);
+  }
+
+  #stage::before{
+    content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(111,211,255,.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(111,211,255,.055) 1px, transparent 1px);
+    background-size:64px 64px;
+  }
+
+  .bg-shield{
+    position:absolute; left:50%; top:52%; width:760px; height:760px;
+    transform:translate(-50%,-50%); color:var(--cyan); opacity:.05;
+    pointer-events:none; z-index:0;
+  }
+
+  /* Cabecera y pie */
+  header{
+    flex:0 0 110px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 56px; border-bottom:2px solid rgba(111,211,255,.16);
+    position:relative; z-index:3;
+  }
+  .brand{ display:flex; align-items:center; gap:20px; }
+  .brand svg{ width:62px; height:62px; color:var(--cyan); }
+  .brand .t1{ font-size:40px; font-weight:800; letter-spacing:3px; }
+  .counter{ font-size:32px; font-weight:600; color:var(--text-2); }
+  .counter b{ font-size:38px; color:var(--cyan); }
+
+  footer{
+    flex:0 0 90px; display:flex; align-items:center; justify-content:center;
+    color:var(--cyan); font-size:32px; font-weight:600; letter-spacing:.5px;
+    border-top:2px solid rgba(111,211,255,.12); position:relative; z-index:3;
+  }
+
+  main{ position:relative; flex:1 1 auto; min-height:0; z-index:2; overflow:hidden; }
+
+  #stage.hacked header,
+  #stage.hacked footer{ display:none; }
+  #stage.hacked main{ z-index:9; }
+
+  /* Pantallas */
+  .screen{ position:absolute; inset:0; display:none; padding:26px 56px 10px; }
+  .screen.active{ display:flex; flex-direction:column; }
+
+  /* ---------- Pantalla de la ruleta ---------- */
+  #screen-wheel.active{
+    display:grid; grid-template-columns:1fr 1fr; align-items:center;
+    padding:6px 64px;
+  }
+  .wheel-side{ display:flex; align-items:center; justify-content:center; height:100%; }
+  .wheel-wrap{ position:relative; width:780px; height:780px; }
+
+  .pointer{
+    position:absolute; left:50%; top:-26px; transform:translateX(-50%);
+    width:0; height:0;
+    border-left:28px solid transparent; border-right:28px solid transparent;
+    border-top:50px solid #ffffff;
+    filter:drop-shadow(0 8px 12px rgba(0,0,0,.7));
+    z-index:6;
+  }
+
+  .wheel{
+    position:absolute; inset:0; border-radius:50%;
+    border:10px solid rgba(111,211,255,.55);
+    box-shadow:0 0 70px rgba(45,140,255,.45), inset 0 0 70px rgba(0,0,0,.55);
+    will-change:transform;
+  }
+
+  .lbl{ position:absolute; inset:0; display:flex; justify-content:center; pointer-events:none; }
+  .lbl-in{
+    padding-top:30px; width:250px; text-align:center;
+    font-size:26px; font-weight:800; line-height:1.12;
+    text-transform:uppercase; letter-spacing:.5px;
+    text-shadow:0 2px 8px rgba(0,0,0,.75);
+  }
+  .lbl-in svg{ width:46px; height:46px; display:block; margin:0 auto 8px; }
+
+  .hub{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:220px; height:220px; border-radius:50%;
+    border:6px solid var(--cyan);
+    background:radial-gradient(circle at 50% 32%, #1d3f74, #0b1a33);
+    color:#fff; font-family:inherit; font-size:44px; font-weight:800; letter-spacing:2px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; z-index:5;
+    box-shadow:0 0 44px rgba(45,140,255,.6);
+    transition:box-shadow .2s, transform .12s;
+  }
+  .hub:hover{ box-shadow:0 0 70px rgba(111,211,255,.85); transform:translate(-50%,-50%) scale(1.04); }
+  .hub:active{ transform:translate(-50%,-50%) scale(.97); }
+
+  .wheel-text{ padding-right:20px; }
+  .wheel-text h1{
+    margin:0 0 8px; font-size:86px; line-height:1.02;
+    font-weight:800; text-transform:uppercase; letter-spacing:1px;
+  }
+  .wheel-text h1 .accent{ color:var(--cyan); }
+  .wheel-text .sub{
+    margin:26px 0 40px; font-size:54px; font-weight:600; color:var(--text-2);
+  }
+  .wheel-text .big-btn{ font-size:52px; min-width:520px; }
+
+  /* Revelación de casilla */
+  .reveal{
+    position:absolute; inset:0; z-index:20;
+    background:rgba(6,13,28,.9);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px;
+    opacity:0; pointer-events:none; transition:opacity .25s;
+  }
+  .reveal.show{ opacity:1; }
+  .reveal svg{ width:160px; height:160px; }
+  .reveal .name{ font-size:110px; font-weight:800; text-align:center; letter-spacing:.5px; }
+
+  /* ---------- Cabecera de reto ---------- */
+  .ch-head{ display:flex; align-items:center; gap:24px; flex:0 0 auto; padding:10px 0 16px; }
+  .ch-icon{ width:74px; height:74px; color:var(--cyan); flex:0 0 auto; }
+  .ch-icon svg{ width:100%; height:100%; }
+  .ch-title{ font-size:46px; font-weight:800; letter-spacing:1px; }
+
+  .timer{ margin-left:auto; display:flex; align-items:center; gap:20px; width:560px; }
+  .timer-bar{
+    flex:1 1 auto; height:18px; border-radius:10px; overflow:hidden;
+    background:rgba(255,255,255,.14);
+  }
+  .timer-fill{ height:100%; width:100%; border-radius:10px; background:var(--blue); }
+  .timer.warn .timer-fill{ background:var(--warn); }
+  .timer.danger .timer-fill{ background:var(--bad); }
+  .timer-num{
+    width:96px; text-align:right; font-size:48px; font-weight:700;
+    font-variant-numeric:tabular-nums;
+  }
+  .timer.warn .timer-num{ color:var(--warn); }
+  .timer.danger .timer-num{ color:var(--bad); }
+
+  .ch-body{
+    flex:1 1 auto; min-height:0;
+    display:flex; flex-direction:column; justify-content:center; gap:28px;
+    padding-bottom:8px;
+  }
+
+  /* ---------- Tarjeta de mensaje ---------- */
+  .msg{
+    width:100%; max-width:1340px; margin:0 auto;
+    border:3px solid rgba(111,211,255,.35); border-radius:26px;
+    background:var(--panel); overflow:hidden;
+    box-shadow:0 0 28px rgba(45,140,255,.22);
+  }
+  .msg.suspicious{ border-color:rgba(255,77,77,.75); box-shadow:0 0 30px rgba(255,77,77,.3); }
+  .msg-head{ background:var(--panel-2); padding:16px 30px; display:flex; flex-direction:column; gap:8px; }
+  .msg-line{ display:flex; gap:18px; font-size:34px; align-items:baseline; }
+  .msg-line .k{ color:var(--text-2); min-width:130px; font-size:28px; text-transform:uppercase; letter-spacing:1px; }
+  .chip{
+    display:inline-block; align-self:flex-start;
+    font-size:26px; letter-spacing:1px; text-transform:uppercase; color:var(--cyan);
+    background:rgba(111,211,255,.1); border:1px solid rgba(111,211,255,.3);
+    border-radius:999px; padding:6px 22px;
+  }
+  .msg-body{ padding:26px 36px; font-size:40px; line-height:1.4; }
+  .msg-body.bubble{ font-size:38px; }
+  .mk{
+    text-decoration:underline; text-decoration-color:var(--bad);
+    text-decoration-thickness:4px; text-underline-offset:7px; color:#FFD8D8;
+  }
+
+  /* Zonas clicables del correo */
+  .zones{ padding:14px 18px; display:flex; flex-direction:column; }
+  .zone{
+    display:flex; align-items:center; gap:22px; width:100%;
+    min-height:92px; padding:12px 18px;
+    background:transparent; border:0; border-left:6px solid transparent;
+    border-radius:14px; color:var(--text); font-family:inherit;
+    font-size:36px; text-align:left; cursor:pointer;
+    transition:background .15s, border-color .15s;
+  }
+  .zone:hover{ background:rgba(45,140,255,.18); border-left-color:var(--cyan); }
+  .zone .zk{
+    flex:0 0 150px; font-size:26px; letter-spacing:1px;
+    text-transform:uppercase; color:var(--text-2);
+  }
+  .zone .zt{ flex:1 1 auto; }
+  .zone.is-senal{ background:rgba(255,77,77,.12); border-left-color:var(--bad); }
+  .zone.picked-ok{ background:rgba(46,204,113,.18); border-left-color:var(--ok); }
+  .zone.picked-bad{ background:rgba(255,77,77,.22); border-left-color:var(--bad); }
+  .zone:disabled{ cursor:default; }
+
+  /* Versión compacta del correo en la pantalla de resultado */
+  .msg.compact .zone{ min-height:68px; font-size:30px; }
+  .msg.compact .zone .zk{ flex-basis:110px; font-size:22px; }
+  .res-grid{ display:grid; grid-template-columns:1.55fr 1fr; gap:36px; align-items:center; }
+  #screen-result .ch-body{ gap:20px; }
+  #screen-result .situation{ font-size:42px; padding:22px 30px; }
+  #screen-result .situation svg{ width:90px; height:90px; }
+  #screen-result .definition{ padding:20px 30px; }
+  #screen-result .definition h2{ font-size:44px; }
+  #screen-result .definition p{ font-size:28px; }
+  #screen-result .signals{ align-self:center; }
+
+  /* Ajustes para que el resultado quepa siempre sin recortes */
+  #screen-result .ch-head{ padding:2px 0 10px; }
+  #screen-result .ch-icon{ width:58px; height:58px; }
+  #screen-result .ch-title{ font-size:40px; }
+  #screen-result .banner{ min-height:92px; font-size:46px; }
+  #screen-result .banner svg{ width:52px; height:52px; }
+  #screen-result .pcard{ min-height:320px; }
+  #screen-result .explain{ font-size:34px; }
+  #screen-result .btn{ min-height:100px; font-size:40px; }
+  #screen-result .btn svg{ width:46px; height:46px; }
+  #screen-result .answers .btn{ min-height:110px; min-width:400px; }
+  #screen-result .signals .sig{ font-size:30px; }
+  #screen-result .phrase.big{ font-size:60px; }
+
+  /* ---------- Botones ---------- */
+  .btn{
+    min-height:120px; min-width:420px; padding:0 44px;
+    border-radius:26px; border:3px solid var(--blue);
+    background:rgba(45,140,255,.14); color:#fff;
+    font-family:inherit; font-size:46px; font-weight:800; letter-spacing:.5px;
+    display:inline-flex; align-items:center; justify-content:center; gap:18px;
+    cursor:pointer; transition:background .16s, box-shadow .16s, transform .1s;
+  }
+  .btn svg{ width:56px; height:56px; }
+  .btn:hover{ background:rgba(45,140,255,.3); box-shadow:0 0 26px rgba(45,140,255,.5); }
+  .btn:active{ transform:translateY(3px); }
+  .btn:disabled{ opacity:.4; cursor:default; }
+
+  .btn.bad{ border-color:var(--bad); background:rgba(255,77,77,.14); }
+  .btn.bad:hover{ background:rgba(255,77,77,.28); box-shadow:0 0 26px rgba(255,77,77,.45); }
+  .btn.solid{ background:var(--blue); }
+  .btn.solid:hover{ background:#4a9dff; }
+  .btn.ok{ border-color:var(--ok); background:rgba(46,204,113,.18); }
+  .btn.ok:hover{ background:rgba(46,204,113,.3); box-shadow:0 0 26px rgba(46,204,113,.45); }
+
+  .answers{ display:flex; justify-content:center; gap:48px; flex-wrap:wrap; }
+  .answers .btn{ min-width:480px; min-height:140px; }
+
+  /* ---------- Contraseñas ---------- */
+  .pcards{ display:grid; grid-template-columns:repeat(3,1fr); gap:44px; padding:0 30px; }
+  .pcard{
+    min-height:380px; padding:26px 22px;
+    border-radius:28px; border:3px solid rgba(111,211,255,.45);
+    background:var(--panel); color:#fff; font-family:inherit;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+    cursor:pointer; transition:border-color .16s, box-shadow .16s, transform .1s;
+  }
+  .pcard:hover{ border-color:var(--cyan); box-shadow:0 0 34px rgba(45,140,255,.5); }
+  .pcard:active{ transform:translateY(3px); }
+  .pcard:disabled{ cursor:default; }
+  .pcard .letter{ font-size:32px; font-weight:700; color:var(--text-2); letter-spacing:2px; }
+  .pcard svg{ width:54px; height:54px; color:var(--cyan); }
+  .pcard .pass{
+    font-family:Consolas, "Courier New", monospace;
+    font-size:46px; font-weight:700; line-height:1.2;
+    word-break:break-word; text-align:center;
+  }
+  .pcard.right{ border-color:var(--ok); box-shadow:0 0 34px rgba(46,204,113,.45); }
+  .pcard.wrong{ border-color:var(--bad); box-shadow:0 0 34px rgba(255,77,77,.4); }
+  .pcard .tag{ font-size:28px; font-weight:700; color:var(--ok); }
+  .pcard .tag.bad{ color:var(--bad); }
+  .strength{ width:100%; height:16px; border-radius:8px; background:rgba(255,255,255,.15); overflow:hidden; }
+  .strength i{ display:block; height:100%; border-radius:8px; }
+  .strength i.s-bad{ background:var(--bad); }
+  .strength i.s-warn{ background:var(--warn); }
+  .strength i.s-ok{ background:var(--ok); }
+  .ptime{ font-size:28px; color:var(--text-2); text-align:center; }
+  .ptime b{ color:var(--text); font-size:30px; display:block; }
+  .note{ text-align:center; color:var(--text-2); font-size:28px; }
+  .hintline{ text-align:center; font-size:44px; font-weight:600; color:var(--text-2); }
+
+  /* ---------- Verdadero o falso / situación ---------- */
+  .phrase{
+    max-width:1500px; margin:0 auto; text-align:center;
+    font-size:64px; line-height:1.28; font-weight:600;
+    padding:34px 44px;
+  }
+  .phrase.big{ font-size:70px; }
+  .situation{
+    max-width:1420px; margin:0 auto;
+    display:flex; align-items:center; gap:32px;
+    background:var(--panel); border:3px solid rgba(111,211,255,.35);
+    border-radius:26px; padding:30px 40px;
+    font-size:50px; line-height:1.3;
+  }
+  .situation svg{ width:120px; height:120px; flex:0 0 auto; color:var(--cyan); }
+
+  /* ---------- Resultado ---------- */
+  .banner{
+    display:flex; align-items:center; gap:24px;
+    min-height:110px; padding:0 34px; border-radius:22px;
+    font-size:54px; font-weight:800;
+  }
+  .banner svg{ width:64px; height:64px; }
+  .banner.ok{ background:rgba(46,204,113,.16); border:3px solid var(--ok); color:#8CF3B4; }
+  .banner.bad{ background:rgba(255,77,77,.14); border:3px solid var(--bad); color:#FFB3B3; }
+  .banner.warn{ background:rgba(255,200,61,.14); border:3px solid var(--warn); color:#FFE1A0; }
+
+  .signals{ display:flex; flex-direction:column; gap:12px; max-width:1340px; margin:0 auto; width:100%; }
+  .sig{ display:flex; gap:18px; align-items:flex-start; font-size:32px; color:var(--text-2); line-height:1.3; }
+  .sig .n{
+    flex:0 0 44px; height:44px; border-radius:50%;
+    background:var(--bad); color:#fff; font-weight:800;
+    display:flex; align-items:center; justify-content:center; font-size:26px;
+  }
+  .sig.real .n{ background:var(--ok); }
+
+  .explain{
+    max-width:1300px; margin:0 auto; width:100%;
+    font-size:38px; line-height:1.35; color:var(--text-2);
+  }
+  .explain b{ color:var(--text); }
+  .actions{ display:flex; justify-content:flex-end; padding-top:4px; }
+
+  .definition{
+    max-width:1200px; margin:0 auto; width:100%;
+    background:var(--panel); border:3px solid var(--blue); border-radius:24px;
+    padding:26px 36px;
+  }
+  .definition h2{ margin:0 0 8px; font-size:52px; }
+  .definition p{ margin:0 0 10px; font-size:32px; color:var(--text-2); line-height:1.35; }
+  .definition .prot{ color:var(--cyan); }
+
+  /* ---------- Premio ---------- */
+  #screen-prize.active{ align-items:center; justify-content:center; text-align:center; gap:26px; }
+  .prize-icon{ width:190px; height:190px; color:var(--ok); }
+  .prize-icon svg{ width:100%; height:100%; }
+  .prize h2{ margin:0; font-size:76px; font-weight:800; line-height:1.1; }
+  .prize p.sub{ margin:6px 0 0; font-size:46px; color:var(--cyan); font-weight:700; }
+  .tip{
+    max-width:1300px; width:100%;
+    background:rgba(45,140,255,.12); border:3px solid rgba(111,211,255,.45);
+    border-radius:24px; padding:26px 40px;
+    font-size:40px; line-height:1.3;
+  }
+  .tip .lbl2{ display:block; font-size:26px; letter-spacing:2px; text-transform:uppercase; color:var(--cyan); margin-bottom:10px; }
+  .extra{ font-size:38px; font-weight:800; color:var(--ok); min-height:48px; }
+
+  /* ---------- ¡Hackeado! ---------- */
+  #screen-hack{ padding:0; }
+  #screen-hack.active{ display:flex; flex-direction:column; }
+  .hack-a, .hack-b, .hack-c{
+    flex:1 1 auto; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:34px; text-align:center;
+  }
+  .hack-a{ background:#0A0A0A; color:var(--bad); font-family:Consolas, "Courier New", monospace; }
+  .hack-a h1{ margin:0; font-size:78px; font-weight:800; letter-spacing:2px; animation:blink 1s steps(1) infinite; }
+  .hack-a .sub{ font-size:44px; color:#FF9C9C; }
+  .hack-a .bar{ width:820px; height:26px; border:2px solid var(--bad); border-radius:6px; overflow:hidden; }
+  .hack-a .bar i{ display:block; height:100%; background:var(--bad); width:0; transition:width 2.6s linear; }
+  .hack-a .pct{ font-size:34px; color:#FF9C9C; }
+  .hack-a.shake{ animation:shake .28s linear 4; }
+  @keyframes blink{ 50%{ opacity:.35; } }
+  @keyframes shake{
+    0%{ transform:translateX(0); } 25%{ transform:translateX(-9px); }
+    50%{ transform:translateX(9px); } 75%{ transform:translateX(-5px); }
+    100%{ transform:translateX(0); }
+  }
+  .hack-b{ background:linear-gradient(180deg,#0b1f42,#0A1428); }
+  .hack-b svg{ width:180px; height:180px; color:var(--cyan); }
+  .hack-b h1{ margin:0; font-size:96px; font-weight:800; }
+  .hack-b p{ margin:0; font-size:44px; color:var(--cyan); }
+  .hack-c{ background:var(--bg); padding:0 90px 30px; gap:24px; }
+  .hack-c h2{ margin:0; font-size:58px; }
+  .hack-c .atk{ font-size:76px; font-weight:800; color:var(--bad); margin:0; }
+  .hack-c .intro{ font-size:32px; color:var(--text-2); margin:0; max-width:1300px; }
+  .tips{ display:flex; gap:26px; max-width:1560px; width:100%; }
+  .tip-card{
+    flex:1 1 0; background:var(--panel); border:3px solid rgba(111,211,255,.35);
+    border-radius:22px; padding:24px 22px; display:flex; flex-direction:column;
+    align-items:center; gap:14px; font-size:30px; line-height:1.3;
+  }
+  .tip-card .n{
+    width:52px; height:52px; border-radius:50%; background:var(--blue);
+    color:#fff; font-size:28px; font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- Panel del operador ---------- */
+  #operator{
+    position:fixed; right:18px; top:18px; z-index:100;
+    display:none; width:330px; padding:18px 22px;
+    background:rgba(10,20,40,.96); border:2px solid var(--cyan);
+    border-radius:16px; color:#fff; font-family:Consolas, "Courier New", monospace;
+    box-shadow:0 10px 30px rgba(0,0,0,.6);
+  }
+  #operator.show{ display:block; }
+  #operator h3{ margin:0 0 10px; font-size:18px; letter-spacing:1px; color:var(--cyan); }
+  #operator .row{ display:flex; justify-content:space-between; font-size:20px; padding:3px 0; }
+  #operator button{
+    margin-top:10px; width:100%; padding:8px; font-size:16px; cursor:pointer;
+    background:rgba(255,77,77,.15); color:#fff; border:1px solid var(--bad); border-radius:8px;
+  }
+  #operator .hint{ margin-top:8px; font-size:13px; color:var(--text-2); line-height:1.4; }
+
+  /* ---------- Error ---------- */
+  #fatal{
+    position:fixed; inset:0; z-index:999; display:none;
+    background:#0A1428; color:#fff; align-items:center; justify-content:center;
+    font-size:64px; font-weight:800; text-align:center; padding:40px;
+  }
+  #fatal.show{ display:flex; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 2.5 20 5.5v6.7c0 4.8-3.4 8.3-8 9.8-4.6-1.5-8-5-8-9.8V5.5l8-3z"/>
+        <path d="m8.6 12.2 2.3 2.4 4.5-4.7"/>
+      </svg>
+      <span class="t1">CIBERSEGURIDAD</span>
+    </div>
+    <div class="counter">Hoy han participado: <b id="counter-p">0</b></div>
+  </header>
+
+  <main>
+    <div class="bg-shield" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width=".7">
+        <path d="M12 2.5 20 5.5v6.7c0 4.8-3.4 8.3-8 9.8-4.6-1.5-8-5-8-9.8V5.5l8-3z"/>
+      </svg>
+    </div>
+
+    <!-- S0 / S1 / S2 -->
+    <section class="screen active" id="screen-wheel">
+      <div class="wheel-side">
+        <div class="wheel-wrap">
+          <div class="pointer" aria-hidden="true"></div>
+          <div class="wheel" id="wheel"></div>
+          <button class="hub" id="hub" aria-label="Girar la ruleta">GIRAR</button>
+        </div>
+      </div>
+      <div class="wheel-text">
+        <h1>¿Estás seguro <span class="accent">en internet?</span></h1>
+        <p class="sub">¡Gira y descúbrelo!</p>
+        <button class="btn solid big-btn" id="btn-spin">GIRAR LA RULETA</button>
+      </div>
+
+      <div class="reveal" id="reveal">
+        <div id="reveal-icon"></div>
+        <div class="name" id="reveal-name"></div>
+      </div>
+    </section>
+
+    <!-- S3 -->
+    <section class="screen" id="screen-challenge">
+      <div class="ch-head" id="ch-head"></div>
+      <div class="ch-body" id="ch-body"></div>
+    </section>
+
+    <!-- S4 -->
+    <section class="screen" id="screen-result">
+      <div class="ch-head" id="res-head"></div>
+      <div id="res-banner"></div>
+      <div class="ch-body" id="res-body"></div>
+    </section>
+
+    <!-- S5 -->
+    <section class="screen" id="screen-prize">
+      <div class="prize" id="prize-content"></div>
+    </section>
+
+    <!-- ¡Hackeado! -->
+    <section class="screen" id="screen-hack"></section>
+  </main>
+
+  <footer>Piensa antes de hacer clic. Protege antes de lamentar.</footer>
+</div>
+
+<div id="operator">
+  <h3>PANEL DEL OPERADOR</h3>
+  <div class="row"><span>Participantes</span><b id="op-p">0</b></div>
+  <div class="row"><span>Aciertos</span><b id="op-a">0</b></div>
+  <button id="op-reset">Reiniciar contador del día</button>
+  <div class="hint">R / Esc reiniciar · M sonido · N siguiente · O panel</div>
+</div>
+
+<div id="fatal">Reiniciando…</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============================================================
+     ICONOS (SVG en línea, sin recursos externos)
+     ============================================================ */
+  var ICON = {
+    shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 20 5.5v6.7c0 4.8-3.4 8.3-8 9.8-4.6-1.5-8-5-8-9.8V5.5l8-3z"/><path d="m8.6 12.2 2.3 2.4 4.5-4.7"/></svg>',
+    hook: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10"/><path d="M12 3v9a4 4 0 0 0 8 0v-2"/><path d="m17 10 3 0"/></svg>',
+    flag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h11l-2.5 4L16 12H5"/></svg>',
+    key: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8.5" r="4.5"/><path d="m11.8 11.8 7 7"/><path d="m15.5 15.5 2-2 3 3-2 2"/></svg>',
+    lupa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>',
+    checkx: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 8 5 5L19 2"/><path d="M15 15l6 6M21 15l-6 6"/></svg>',
+    skull: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 0-7 7v3l-1 2v4h4v3h8v-3h4v-4l-1-2V9a7 7 0 0 0-7-7z"/><circle cx="9" cy="10" r="1.3" fill="currentColor"/><circle cx="15" cy="10" r="1.3" fill="currentColor"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>',
+    lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
+    warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 22 20H2L12 3z"/><path d="M12 9v5"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 13 6 6L21 6"/></svg>',
+    x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l14 14M19 5 5 19"/></svg>',
+    next: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m13 6 6 6-6 6"/></svg>'
+  };
+
+  /* ============================================================
+     DATOS
+     ============================================================ */
+  var CASILLAS = [
+    { id:"real_fraude", nombre:"¿Real o fraude?",     corto:"¿REAL O FRAUDE?",     color:"#2D8CFF", icono:"hook",   tiempo:15 },
+    { id:"alerta",      nombre:"Encuentra la alerta", corto:"ENCUENTRA LA ALERTA", color:"#1F6FD1", icono:"flag",   tiempo:20 },
+    { id:"password",    nombre:"Contraseña fuerte",   corto:"CONTRASEÑA FUERTE",   color:"#3FB8E8", icono:"key",    tiempo:15 },
+    { id:"ataque",      nombre:"¿Qué ataque es?",     corto:"¿QUÉ ATAQUE ES?",     color:"#5B6BFF", icono:"lupa",   tiempo:20 },
+    { id:"vf",          nombre:"Verdadero o falso",   corto:"VERDADERO O FALSO",   color:"#2AA6A0", icono:"checkx", tiempo:12 },
+    { id:"hackeado",    nombre:"¡Hackeado!",          corto:"¡HACKEADO!",          color:"#FF4D4D", icono:"skull",  tiempo:0  }
+  ];
+
+  var RETOS = {
+
+    real_fraude: [
+      {
+        formato:"correo", chip:"Correo electrónico",
+        de:"soporte@banc0-seguro.example",
+        asunto:"URGENTE: tu cuenta será suspendida en 24 horas",
+        cuerpo:"Ingresa aquí para verificar tus datos.",
+        correcta:"fraude", marcas:["de","asunto","cuerpo"],
+        senales:[
+          "Dominio mal escrito (cero en lugar de «o»)",
+          "Presión de tiempo",
+          "Pide datos por un enlace"
+        ]
+      },
+      {
+        formato:"whatsapp", chip:"WhatsApp · número desconocido",
+        de:"+1 (555) 019-2837",
+        cuerpo:"Hola mamá, cambié de número. ¿Me depositas $200 ahorita? Es urgente.",
+        correcta:"fraude", marcas:["de","cuerpo"],
+        senales:[
+          "Número nuevo y desconocido",
+          "Urgencia y dinero",
+          "Evita la llamada: confirma al número de siempre"
+        ]
+      },
+      {
+        formato:"notificacion", chip:"Notificación del sistema",
+        de:"Seguridad de la cuenta",
+        cuerpo:"Se inició sesión en tu cuenta desde tu teléfono. Si fuiste tú, no necesitas hacer nada.",
+        correcta:"real", marcas:[],
+        senales:[
+          "No pide datos",
+          "No trae enlaces",
+          "Coincide con algo que acabas de hacer"
+        ]
+      },
+      {
+        formato:"sms", chip:"SMS · remitente desconocido",
+        de:"Ofertas Ya",
+        cuerpo:"¡Ganaste un teléfono nuevo! Paga $9.99 de envío para reclamarlo: ofertas-ya.example/premio",
+        correcta:"fraude", marcas:["cuerpo"],
+        senales:[
+          "Premio de un concurso en el que no participaste",
+          "Pide un pago",
+          "Enlace desconocido"
+        ]
+      },
+      {
+        formato:"correo", chip:"Correo electrónico",
+        de:"secretaria.academica@universidad.example",
+        asunto:"Tu horario del próximo semestre ya está disponible",
+        cuerpo:"Entra al portal escribiendo la dirección oficial en tu navegador.",
+        correcta:"real", marcas:[],
+        senales:[
+          "Sin presión de tiempo",
+          "No pide datos",
+          "Te indica entrar por tu cuenta, no por un enlace"
+        ]
+      },
+      {
+        formato:"correo", chip:"Correo electrónico",
+        de:"soporte@facturas-servicio.example",
+        asunto:"Hemos detectado un acceso extraño",
+        cuerpo:"Descarga el archivo adjunto «Factura_urgente.exe» para revisar tu cuenta.",
+        correcta:"fraude", marcas:["asunto","cuerpo"],
+        senales:[
+          "Archivo ejecutable adjunto",
+          "Mensaje alarmista",
+          "Una empresa seria no pide instalar nada por correo"
+        ]
+      }
+    ],
+
+    alerta: [
+      {
+        de:"seguridad@cuenta-verifica.example",
+        asunto:"Acción inmediata requerida",
+        cuerpo:"Haz clic en el botón antes de que tu cuenta sea cerrada.",
+        boton:"VERIFICAR AHORA",
+        zonas:[
+          { k:"De",     t:"seguridad@cuenta-verifica.example", esSenal:true,  motivo:"Remitente que no es de la empresa" },
+          { k:"Asunto", t:"Acción inmediata requerida",        esSenal:true,  motivo:"Lenguaje de urgencia" },
+          { k:"Saludo", t:"Estimado usuario",                  esSenal:false, motivo:"Genérico, pero común" },
+          { k:"Botón",  t:"VERIFICAR AHORA → 192.0.2.15",      esSenal:true,  motivo:"Enlace con números en lugar de nombre" }
+        ]
+      },
+      {
+        de:"rrhh@empresa-externa.example",
+        asunto:"Nueva política salarial 2026",
+        cuerpo:"Adjuntamos la nueva política salarial para tu revisión.",
+        boton:"",
+        zonas:[
+          { k:"De",      t:"rrhh@empresa-externa.example",            esSenal:true,  motivo:"Remitente externo con nombre de la empresa" },
+          { k:"Asunto",  t:"Nueva política salarial 2026",             esSenal:false, motivo:"Asunto con fecha" },
+          { k:"Cuerpo",  t:"Adjuntamos la nueva política salarial.",   esSenal:false, motivo:"Texto corto" },
+          { k:"Adjunto", t:"Politica_Salarial.pdf.exe",                esSenal:true,  motivo:"Doble extensión del archivo (.pdf.exe)" }
+        ]
+      },
+      {
+        de:"seguridad@tu-banco.example",
+        asunto:"Tu tarjeta fue bloqueada",
+        cuerpo:"Responde este correo con tu número de tarjeta y tu clave para desbloquearla.",
+        boton:"",
+        zonas:[
+          { k:"De",        t:"seguridad@tu-banco.example",     esSenal:false, motivo:"Remitente que imita al banco" },
+          { k:"Asunto",    t:"Tu tarjeta fue bloqueada",       esSenal:true,  motivo:"Tono alarmista" },
+          { k:"Cuerpo",    t:"Responde con tu número de tarjeta y tu clave", esSenal:true, motivo:"Pide clave y número de tarjeta por correo" },
+          { k:"Hora",      t:"Enviado: 03:14 a. m.",           esSenal:false, motivo:"Hora de envío" },
+          { k:"Despedida", t:"Atentamente, tu banco.",         esSenal:false, motivo:"Despedida cordial" }
+        ]
+      },
+      {
+        de:"avisos@entregas-rapidas.example",
+        asunto:"Tu paquete no pudo entregarse",
+        cuerpo:"Paga $1.50 en el enlace para reprogramar la entrega.",
+        boton:"PAGAR AHORA",
+        zonas:[
+          { k:"De",     t:"avisos@entregas-rapidas.example", esSenal:true,  motivo:"Dominio desconocido" },
+          { k:"Cuerpo", t:"Paga $1.50 para reprogramar",     esSenal:true,  motivo:"Cobro inesperado" },
+          { k:"Enlace", t:"entregas-rapidas.example/pago",   esSenal:true,  motivo:"Enlace con dominio desconocido" },
+          { k:"Guía",   t:"N.º de guía: 8823-1190",          esSenal:false, motivo:"Número de guía" },
+          { k:"Firma",  t:"[logotipo de la empresa]",        esSenal:false, motivo:"Logo" }
+        ]
+      }
+    ],
+
+    password: [
+      {
+        opciones:["123456", "Sofia2005", "Cielo!Verde-Tren#58"],
+        correcta:2,
+        tiempos:["Al instante", "Unas horas", "Cientos de años"],
+        explicacion:"Larga, mezcla palabras, símbolos y números, y no usa datos personales."
+      },
+      {
+        opciones:["qwerty", "Tigre-Luna-Bote-91!", "password1"],
+        correcta:1,
+        tiempos:["Al instante", "Cientos de años", "Al instante"],
+        explicacion:"Una frase larga y rara resiste mucho más que palabras comunes."
+      },
+      {
+        opciones:["MiPerro2010", "Zq7!mP2#vR9", "contraseña"],
+        correcta:1,
+        tiempos:["Unas horas", "Cientos de años", "Al instante"],
+        explicacion:"Es aleatoria, mezcla tipos de caracteres y no es una palabra. Un gestor de contraseñas ayuda a recordarlas."
+      },
+      {
+        opciones:["Mar-Roja-Pan-Tren-47", "admin123", "Juan1990"],
+        correcta:0,
+        tiempos:["Cientos de años", "Al instante", "Unas horas"],
+        explicacion:"Frase larga con varias palabras. Nombre y año de nacimiento son lo primero que prueba un atacante."
+      }
+    ],
+
+    ataque: [
+      {
+        situacion:"Recibes un mensaje que parece de tu banco y te pide entrar a un enlace para «confirmar tus datos».",
+        opciones:["Phishing", "Ransomware", "Fuerza bruta"],
+        correcta:0,
+        definicion:"Engaño para que entregues tu información.",
+        proteccion:"Verifica el remitente y entra por la página oficial."
+      },
+      {
+        situacion:"Un programa intenta miles de contraseñas distintas hasta dar con la de una cuenta.",
+        opciones:["Fuerza bruta", "Phishing", "Suplantación"],
+        correcta:0,
+        definicion:"Probar combinaciones hasta acertar.",
+        proteccion:"Usa contraseñas largas y activa la verificación en dos pasos."
+      },
+      {
+        situacion:"Todos tus archivos aparecen bloqueados y te piden dinero para recuperarlos.",
+        opciones:["Ransomware", "Phishing", "Fuerza bruta"],
+        correcta:0,
+        definicion:"Secuestra tus archivos a cambio de dinero.",
+        proteccion:"Haz copias de seguridad y no abras archivos dudosos."
+      },
+      {
+        situacion:"Alguien crea un perfil con tu nombre y tu foto y escribe a tus amigos pidiendo dinero.",
+        opciones:["Suplantación de identidad", "Ransomware", "Fuerza bruta"],
+        correcta:0,
+        definicion:"Alguien se hace pasar por ti o por otra persona.",
+        proteccion:"Avisa a tus contactos y reporta el perfil."
+      },
+      {
+        situacion:"Descargas un juego «gratis» de una página rara y desde entonces tu computadora va lenta y muestra anuncios extraños.",
+        opciones:["Malware", "Fuerza bruta", "Phishing"],
+        correcta:0,
+        definicion:"Software malicioso escondido en programas.",
+        proteccion:"Descarga solo de tiendas oficiales y mantén un antivirus."
+      },
+      {
+        situacion:"Conectas tu celular a un wifi público «gratis» y alguien intercepta lo que envías.",
+        opciones:["Ataque en red pública", "Ransomware", "Suplantación"],
+        correcta:0,
+        definicion:"Las redes abiertas pueden ser vigiladas.",
+        proteccion:"Evita entrar a cuentas importantes en ellas o usa datos móviles."
+      }
+    ],
+
+    vf: [
+      { frase:"Si tengo antivirus, no necesito tener más cuidado.", correcta:false,
+        explicacion:"El antivirus ayuda, pero no detiene un engaño: el error humano sigue siendo el mayor riesgo." },
+      { frase:"Puedo entrar a mi banco desde un wifi público sin problema.", correcta:false,
+        explicacion:"Las redes abiertas pueden ser vigiladas. Mejor usa tus datos móviles." },
+      { frase:"La verificación en dos pasos agrega una capa extra de protección.", correcta:true,
+        explicacion:"Aunque alguien tenga tu clave, también necesitaría tu segundo paso." },
+      { frase:"Puedo usar la misma contraseña en todas mis cuentas si es muy larga.", correcta:false,
+        explicacion:"Si se filtra en un sitio, quedan expuestas todas tus cuentas." },
+      { frase:"Los mensajes con faltas de ortografía y mucha urgencia suelen ser sospechosos.", correcta:true,
+        explicacion:"Los estafadores buscan que actúes sin pensar. Detente y verifica." },
+      { frase:"Un candado en la barra del navegador significa que la página es 100 % confiable.", correcta:false,
+        explicacion:"Significa que la conexión está cifrada, pero una página falsa también puede tenerlo." },
+      { frase:"Mantener mis aplicaciones actualizadas ayuda a cerrar puertas a los atacantes.", correcta:true,
+        explicacion:"Las actualizaciones corrigen fallos de seguridad conocidos." }
+    ]
+  };
+
+  var HACKS = [
+    {
+      titulo:"TUS ARCHIVOS HAN SIDO CIFRADOS",
+      sub:"Tienes 00:00:03 para pagar o se perderán",
+      ataque:"Ransomware",
+      intro:"Un programa malicioso cifra tus archivos y pide dinero para devolverlos.",
+      consejos:["Haz copias de seguridad.", "No abras archivos ni enlaces dudosos.", "No pagues: avisa a soporte."]
+    },
+    {
+      titulo:"¡VIRUS DETECTADO!",
+      sub:"Llama ya al número 800-000-0000 (ficticio)",
+      ataque:"Estafa de falso soporte técnico",
+      intro:"Una ventana falsa asusta para que llames y entregues datos o dinero.",
+      consejos:["Cierra la ventana; no llames.", "Ningún navegador te pide llamar por un virus.", "Si dudas, apaga y vuelve a abrir."]
+    },
+    {
+      titulo:"TU CUENTA FUE BLOQUEADA",
+      sub:"Ingresa tus datos para recuperarla",
+      ataque:"Phishing / robo de cuenta",
+      intro:"Una página clon imita el inicio de sesión para quedarse con tu clave.",
+      consejos:["No escribas tus datos en páginas a las que llegaste por un aviso.", "Entra siempre por la dirección oficial.", "Activa la verificación en dos pasos."]
+    }
+  ];
+
+  var TIPS = [
+    "No compartas tus contraseñas.",
+    "Evita abrir enlaces o archivos sospechosos.",
+    "Activa la autenticación en dos pasos.",
+    "No entregues información personal a desconocidos ni en páginas que no hayas verificado.",
+    "Mantén tus dispositivos y aplicaciones actualizados."
+  ];
+
+  /* ============================================================
+     ESTADO Y UTILIDADES
+     ============================================================ */
+  var stage      = document.getElementById("stage");
+  var wheel      = document.getElementById("wheel");
+  var reveal     = document.getElementById("reveal");
+  var revealName = document.getElementById("reveal-name");
+  var revealIcon = document.getElementById("reveal-icon");
+  var counterP   = document.getElementById("counter-p");
+
+  var state = {
+    mode: "idle",        // idle | spinning | reveal | challenge | result | hack | prize
+    casilla: null,
+    reto: null,
+    vista: null,
+    result: null,
+    rot: 0,
+    decks: {},
+    lastCasilla: -1,
+    timers: [],
+    raf: 0,
+    timerOn: false,
+    timerId: null,
+    hackTick: null,
+    lock: 0,
+    lastAction: Date.now(),
+    counters: { p: 0, a: 0 },
+    sound: false
+  };
+
+  function $(sel) { return document.querySelector(sel); }
+  function el(id) { return document.getElementById(id); }
+
+  function shuffle(list) {
+    var a = list.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function later(ms, fn) {
+    var id = setTimeout(function () {
+      state.timers = state.timers.filter(function (x) { return x !== id; });
+      fn();
+    }, ms);
+    state.timers.push(id);
+    return id;
+  }
+
+  function clearLater() {
+    state.timers.forEach(clearTimeout);
+    state.timers = [];
+  }
+
+  function setLock(ms) {
+    state.lock = (window.performance ? performance.now() : Date.now()) + (ms || 400);
+  }
+
+  function locked() {
+    var now = window.performance ? performance.now() : Date.now();
+    return now < state.lock;
+  }
+
+  function showScreen(id) {
+    var screens = document.querySelectorAll(".screen");
+    for (var i = 0; i < screens.length; i++) {
+      screens[i].classList.toggle("active", screens[i].id === id);
+    }
+  }
+
+  /* Sonido opcional (sin archivos externos) */
+  var audioCtx = null;
+  function beep(freq, dur, type, vol) {
+    if (!state.sound) return;
+    try {
+      if (!audioCtx) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        audioCtx = new AC();
+      }
+      var osc = audioCtx.createOscillator();
+      var g = audioCtx.createGain();
+      osc.type = type || "sine";
+      osc.frequency.value = freq;
+      g.gain.value = vol || 0.05;
+      osc.connect(g);
+      g.connect(audioCtx.destination);
+      var t = audioCtx.currentTime;
+      osc.start(t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.stop(t + dur);
+    } catch (e) { /* sin sonido, la página sigue igual */ }
+  }
+
+  /* ============================================================
+     CONTADOR DEL DÍA
+     ============================================================ */
+  var STORE_KEY = "gie_contador_v1";
+
+  function hoy() {
+    var d = new Date();
+    return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+  }
+
+  function cargaContador() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      var o = JSON.parse(raw);
+      if (o && o.dia === hoy()) {
+        state.counters.p = o.p || 0;
+        state.counters.a = o.a || 0;
+      }
+    } catch (e) { /* localStorage puede fallar */ }
+    pintaContador();
+  }
+
+  function guardaContador() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        dia: hoy(), p: state.counters.p, a: state.counters.a
+      }));
+    } catch (e) { /* sigue funcionando */ }
+  }
+
+  function pintaContador() {
+    counterP.textContent = state.counters.p;
+    el("op-p").textContent = state.counters.p;
+    el("op-a").textContent = state.counters.a;
+  }
+
+  /* ============================================================
+     CONSTRUCCIÓN DE LA RULETA
+     ============================================================ */
+  function construyeRuleta() {
+    var stops = [];
+    var labels = [];
+    for (var i = 0; i < CASILLAS.length; i++) {
+      var c = CASILLAS[i];
+      stops.push(c.color + " " + (i * 60) + "deg " + ((i + 1) * 60) + "deg");
+      labels.push(
+        '<div class="lbl" style="transform:rotate(' + (i * 60 + 30) + 'deg)">' +
+          '<div class="lbl-in" style="color:#fff">' + ICON[c.icono] + c.corto + '</div>' +
+        '</div>'
+      );
+    }
+    wheel.style.background = "conic-gradient(" + stops.join(",") + ")";
+    wheel.innerHTML = labels.join("");
+  }
+
+  /* ============================================================
+     MÁQUINA DE ESTADOS
+     ============================================================ */
+  function pickCasilla() {
+    var idx = Math.floor(Math.random() * CASILLAS.length);
+    if (idx === state.lastCasilla) {
+      idx = (idx + 1 + Math.floor(Math.random() * (CASILLAS.length - 1))) % CASILLAS.length;
+    }
+    state.lastCasilla = idx;
+    return idx;
+  }
+
+  function spin() {
+    if (state.mode !== "idle" || locked()) return;
+    setLock();
+    state.lastAction = Date.now();
+    state.mode = "spinning";
+
+    var idx = pickCasilla();
+    state.casilla = idx;
+
+    var base = Math.ceil(state.rot / 360) * 360;
+    var jitter = (Math.random() - 0.5) * 40;
+    state.rot = base + 360 * 5 + (360 - (idx * 60 + 30)) + jitter;
+
+    wheel.style.transition = "transform 3.8s cubic-bezier(.12,.7,.15,1)";
+    wheel.style.transform = "rotate(" + state.rot + "deg)";
+    beep(300, 0.05, "square", 0.03);
+
+    later(4300, function () {
+      if (state.mode === "spinning") revealCasilla();
+    });
+  }
+
+  function revealCasilla() {
+    if (state.mode !== "spinning") return;
+    state.mode = "reveal";
+    var c = CASILLAS[state.casilla];
+    revealName.textContent = c.nombre.toUpperCase();
+    revealName.style.color = c.color;
+    revealIcon.innerHTML = ICON[c.icono];
+    revealIcon.style.color = c.color;
+    reveal.classList.add("show");
+    beep(660, 0.12, "sine", 0.06);
+
+    later(1600, function () {
+      reveal.classList.remove("show");
+      if (state.casilla === 5) startHack();
+      else startChallenge();
+    });
+  }
+
+  function siguienteReto(id) {
+    if (!state.decks[id] || state.decks[id].length === 0) {
+      state.decks[id] = shuffle(RETOS[id].map(function (_, i) { return i; }));
+    }
+    return state.decks[id].pop();
+  }
+
+  /* ============================================================
+     CRONÓMETRO
+     ============================================================ */
+  function startTimer(segundos, onEnd) {
+    stopTimer();
+    var bar = el("timer");
+    var fill = bar ? bar.querySelector(".timer-fill") : null;
+    var num = bar ? bar.querySelector(".timer-num") : null;
+    if (!fill || !num) return;
+
+    var total = segundos * 1000;
+    var t0 = (window.performance ? performance.now() : Date.now());
+    state.timerOn = true;
+
+    function step(now) {
+      if (!state.timerOn) return;
+      var left = Math.max(0, total - (now - t0));
+      var f = left / total;
+      fill.style.width = (f * 100) + "%";
+      num.textContent = Math.ceil(left / 1000);
+      bar.classList.toggle("warn", left <= 7000 && left > 3000);
+      bar.classList.toggle("danger", left <= 3000);
+      state.raf = requestAnimationFrame(step);
+    }
+    state.raf = requestAnimationFrame(step);
+
+    state.timerId = later(segundos * 1000 + 30, function () {
+      if (state.timerOn && state.mode === "challenge") onEnd();
+    });
+  }
+
+  function stopTimer() {
+    state.timerOn = false;
+    if (state.raf) cancelAnimationFrame(state.raf);
+    state.raf = 0;
+    if (state.timerId) {
+      clearTimeout(state.timerId);
+      state.timers = state.timers.filter(function (x) { return x !== state.timerId; });
+      state.timerId = null;
+    }
+    var bar = el("timer");
+    if (bar) { bar.classList.remove("warn", "danger"); }
+  }
+
+  /* ============================================================
+     PANTALLA DE RETO
+     ============================================================ */
+  function headHTML(c, conTimer) {
+    return '<div class="ch-icon">' + ICON[c.icono] + '</div>' +
+      '<div class="ch-title">' + c.corto + '</div>' +
+      (conTimer && c.tiempo ?
+        '<div class="timer" id="timer">' +
+          '<div class="timer-bar"><div class="timer-fill"></div></div>' +
+          '<div class="timer-num">' + c.tiempo + '</div>' +
+        '</div>' : "");
+  }
+
+  function startChallenge() {
+    state.mode = "challenge";
+    state.result = null;
+    var c = CASILLAS[state.casilla];
+    var idx = siguienteReto(c.id);
+    state.reto = RETOS[c.id][idx];
+
+    el("ch-head").innerHTML = headHTML(c, true);
+    el("ch-body").innerHTML = cuerpoReto(c.id);
+    showScreen("screen-challenge");
+    setLock(400);
+
+    var body = el("ch-body");
+    if (c.id === "real_fraude") {
+      var btns = body.querySelectorAll("[data-a]");
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].addEventListener("click", function () {
+          var pick = this.getAttribute("data-a");
+          responder(pick === state.reto.correcta, false);
+        });
+      }
+    } else if (c.id === "alerta") {
+      var zonas = body.querySelectorAll("[data-z]");
+      for (var j = 0; j < zonas.length; j++) {
+        zonas[j].addEventListener("click", function () {
+          var z = parseInt(this.getAttribute("data-z"), 10);
+          state.result = { zona: z };
+          responder(!!state.reto.zonas[z].esSenal, false);
+        });
+      }
+    } else if (c.id === "password" || c.id === "ataque") {
+      var cards = body.querySelectorAll("[data-i]");
+      for (var k = 0; k < cards.length; k++) {
+        cards[k].addEventListener("click", function () {
+          var i2 = parseInt(this.getAttribute("data-i"), 10);
+          state.result = { indice: i2 };
+          responder(!!state.vista[i2].correct, false);
+        });
+      }
+    } else if (c.id === "vf") {
+      var vfBtns = body.querySelectorAll("[data-v]");
+      for (var m = 0; m < vfBtns.length; m++) {
+        vfBtns[m].addEventListener("click", function () {
+          var v = this.getAttribute("data-v") === "1";
+          state.result = { valor: v };
+          responder(v === state.reto.correcta, false);
+        });
+      }
+    }
+
+    startTimer(c.tiempo, function () {
+      if (state.mode === "challenge") responder(false, true);
+    });
+  }
+
+  function cuerpoReto(id) {
+    var r = state.reto;
+
+    if (id === "real_fraude") {
+      return tarjetaMensaje(r, "challenge") +
+        '<div class="answers">' +
+          '<button class="btn ok" data-a="real">' + ICON.check + ' REAL</button>' +
+          '<button class="btn bad" data-a="fraude">' + ICON.warn + ' FRAUDE</button>' +
+        '</div>';
+    }
+
+    if (id === "alerta") {
+      return tarjetaAlerta(r, "challenge", -1);
+    }
+
+    if (id === "password") {
+      state.vista = shuffle(r.opciones.map(function (o, i) {
+        return { texto: o, correct: i === r.correcta, tiempo: r.tiempos[i] };
+      }));
+      var letras = ["A", "B", "C"];
+      var cards = state.vista.map(function (v, i) {
+        return '<button class="pcard" data-i="' + i + '">' +
+          '<span class="letter">' + letras[i] + '</span>' +
+          ICON.lock +
+          '<span class="pass">' + v.texto + '</span>' +
+        '</button>';
+      }).join("");
+      return '<div class="hintline">¿Cuál es la más segura?</div>' +
+        '<div class="pcards">' + cards + '</div>';
+    }
+
+    if (id === "ataque") {
+      state.vista = shuffle(r.opciones.map(function (o, i) {
+        return { texto: o, correct: i === r.correcta };
+      }));
+      var b = state.vista.map(function (v, i) {
+        return '<button class="btn" data-i="' + i + '">' + v.texto + '</button>';
+      }).join("");
+      return '<div class="situation">' + ICON.lupa + '<span>' + r.situacion + '</span></div>' +
+        '<div class="answers">' + b + '</div>';
+    }
+
+    // vf
+    return '<div class="phrase big">«' + r.frase + '»</div>' +
+      '<div class="answers">' +
+        '<button class="btn ok" data-v="1">' + ICON.check + ' VERDADERO</button>' +
+        '<button class="btn bad" data-v="0">' + ICON.x + ' FALSO</button>' +
+      '</div>';
+  }
+
+  function tarjetaMensaje(r, modo) {
+    var marca = function (campo) {
+      return (modo === "result" && r.marcas && r.marcas.indexOf(campo) >= 0) ? "mk" : "";
+    };
+    var cls = "msg" + (modo === "result" && r.correcta === "fraude" ? " suspicious" : "");
+    var head = "";
+
+    if (r.formato === "correo") {
+      head =
+        '<div class="msg-head">' +
+          '<span class="chip">' + (r.chip || "Correo electrónico") + '</span>' +
+          '<div class="msg-line"><span class="k">De</span><span class="' + marca("de") + '">' + r.de + '</span></div>' +
+          '<div class="msg-line"><span class="k">Asunto</span><span class="' + marca("asunto") + '">' + r.asunto + '</span></div>' +
+        '</div>' +
+        '<div class="msg-body"><span class="' + marca("cuerpo") + '">' + r.cuerpo + '</span></div>';
+    } else {
+      head =
+        '<div class="msg-head"><span class="chip">' + (r.chip || r.formato) + '</span>' +
+          '<div class="msg-line"><span class="' + marca("de") + '">' + r.de + '</span></div>' +
+        '</div>' +
+        '<div class="msg-body bubble"><span class="' + marca("cuerpo") + '">' + r.cuerpo + '</span></div>';
+    }
+    return '<div class="' + cls + '">' + head + '</div>';
+  }
+
+  function tarjetaAlerta(r, modo, elegida) {
+    var zonas = r.zonas.map(function (z, i) {
+      var cls = "zone";
+      if (modo === "result") {
+        if (z.esSenal) cls += " is-senal";
+        if (i === elegida) cls += z.esSenal ? " picked-ok" : " picked-bad";
+      }
+      return '<button class="' + cls + '" data-z="' + i + '"' +
+        (modo === "result" ? " disabled" : "") + '>' +
+        '<span class="zk">' + z.k + '</span>' +
+        '<span class="zt">' + z.t + '</span>' +
+      '</button>';
+    }).join("");
+
+    return '<div class="msg' + (modo === "result" ? " compact" : "") + '" style="max-width:1560px">' +
+      '<div class="msg-head"><span class="chip">Correo · haz clic en lo sospechoso</span></div>' +
+      '<div class="zones">' + zonas + '</div>' +
+    '</div>';
+  }
+
+  /* ============================================================
+     RESULTADO
+     ============================================================ */
+  function responder(acierto, tiempoAgotado) {
+    if (locked()) return;
+    if (state.mode !== "challenge") return;
+    stopTimer();
+
+    state.mode = "result";
+    state.lastCorrect = acierto;
+    state.timeout = !!tiempoAgotado;
+    setLock(400);
+    if (acierto) beep(880, 0.14, "sine", 0.06);
+    else beep(220, 0.2, "triangle", 0.06);
+
+    renderResultado(acierto, tiempoAgotado);
+    showScreen("screen-result");
+  }
+
+  function bannerHTML(acierto, tiempoAgotado) {
+    if (tiempoAgotado) {
+      return '<div class="banner warn">' + ICON.clock + ' Se acabó el tiempo. Mira la respuesta:</div>';
+    }
+    if (acierto) {
+      return '<div class="banner ok">' + ICON.check + ' ¡Correcto!</div>';
+    }
+    return '<div class="banner bad">' + ICON.x + ' Casi. Mira por qué:</div>';
+  }
+
+  function renderResultado(acierto, tiempoAgotado) {
+    var c = CASILLAS[state.casilla];
+    var r = state.reto;
+    var body = el("res-body");
+
+    el("res-head").innerHTML = headHTML(c, false);
+    el("res-banner").innerHTML = bannerHTML(acierto, tiempoAgotado);
+
+    if (c.id === "real_fraude") {
+      var lista = r.senales.map(function (s, i) {
+        return '<div class="sig ' + (r.correcta === "real" ? "real" : "") + '">' +
+          '<span class="n">' + (i + 1) + '</span><span>' + s + '</span></div>';
+      }).join("");
+      var veredicto = r.correcta === "fraude" ? "Este mensaje es un fraude." : "Este mensaje es real.";
+      body.innerHTML =
+        tarjetaMensaje(r, "result") +
+        '<div class="signals">' + lista + '</div>' +
+        '<div class="actions"><button class="btn solid" id="btn-next">SIGUIENTE ' + ICON.next + '</button></div>';
+    }
+
+    else if (c.id === "alerta") {
+      var elegida = state.result ? state.result.zona : -1;
+      var motivos = r.zonas.map(function (z, i) {
+        if (!z.esSenal) return "";
+        return '<div class="sig"><span class="n">' + (i + 1) + '</span><span><b>' + z.k + ':</b> ' + z.motivo + '</span></div>';
+      }).join("");
+      body.innerHTML =
+        '<div class="res-grid">' +
+          tarjetaAlerta(r, "result", elegida) +
+          '<div class="signals">' + motivos + '</div>' +
+        '</div>' +
+        '<div class="actions"><button class="btn solid" id="btn-next">SIGUIENTE ' + ICON.next + '</button></div>';
+    }
+
+    else if (c.id === "password") {
+      var elegidoP = state.result ? state.result.indice : -1;
+      var tarjetas = state.vista.map(function (v, i) {
+        var cls = "pcard";
+        if (v.correct) cls += " right";
+        else if (i === elegidoP) cls += " wrong";
+        var h = fuerza(v.tiempo);
+        return '<div class="' + cls + '">' +
+          '<span class="letter">' + ["A", "B", "C"][i] + '</span>' +
+          (v.correct ? '<span class="tag">✓ La más segura</span>' : "") +
+          '<span class="pass">' + v.texto + '</span>' +
+          '<div class="strength"><i class="s-' + h.cls + '" style="width:' + h.pct + '%"></i></div>' +
+          '<div class="ptime">Tiempo estimado para descifrarla<b>' + v.tiempo + '</b></div>' +
+        '</div>';
+      }).join("");
+      body.innerHTML =
+        '<div class="pcards">' + tarjetas + '</div>' +
+        '<div class="explain">' + r.explicacion + '</div>' +
+        '<div class="note">Tiempos ilustrativos</div>' +
+        '<div class="actions"><button class="btn solid" id="btn-next">SIGUIENTE ' + ICON.next + '</button></div>';
+    }
+
+    else if (c.id === "ataque") {
+      var elegidoA = state.result ? state.result.indice : -1;
+      var opciones = state.vista.map(function (v, i) {
+        var cls = "btn";
+        if (v.correct) cls += " ok";
+        else if (i === elegidoA) cls += " bad";
+        return '<div class="' + cls + '" style="cursor:default">' + v.texto + '</div>';
+      }).join("");
+      body.innerHTML =
+        '<div class="situation">' + ICON.lupa + '<span>' + r.situacion + '</span></div>' +
+        '<div class="answers">' + opciones + '</div>' +
+        '<div class="definition">' +
+          '<h2>' + r.opciones[r.correcta] + '</h2>' +
+          '<p>' + r.definicion + '</p>' +
+          '<p class="prot"><b>Cómo protegerte:</b> ' + r.proteccion + '</p>' +
+        '</div>' +
+        '<div class="actions"><button class="btn solid" id="btn-next">SIGUIENTE ' + ICON.next + '</button></div>';
+    }
+
+    else { // vf
+      body.innerHTML =
+        '<div class="phrase big">«' + r.frase + '»</div>' +
+        '<div class="explain" style="text-align:center;font-size:44px">La respuesta es <b style="color:' +
+          (r.correcta ? "#2ECC71" : "#FF4D4D") + '">' + (r.correcta ? "VERDADERO" : "FALSO") + '</b>.</div>' +
+        '<div class="explain">' + r.explicacion + '</div>' +
+        '<div class="actions"><button class="btn solid" id="btn-next">SIGUIENTE ' + ICON.next + '</button></div>';
+    }
+
+    var next = el("btn-next");
+    if (next) {
+      next.addEventListener("click", function () {
+        if (locked()) return;
+        showPrize();
+      });
+    }
+  }
+
+  function fuerza(tiempo) {
+    if (/instante/i.test(tiempo)) return { pct: 6, cls: "bad" };
+    if (/horas/i.test(tiempo)) return { pct: 45, cls: "warn" };
+    return { pct: 100, cls: "ok" };
+  }
+
+  /* ============================================================
+     ¡HACKEADO!
+     ============================================================ */
+  function startHack() {
+    state.mode = "hack";
+    state.result = null;
+    state.lastCorrect = null;
+    stage.classList.add("hacked");
+
+    var h = HACKS[Math.floor(Math.random() * HACKS.length)];
+    showScreen("screen-hack");
+
+    var scr = el("screen-hack");
+    scr.innerHTML =
+      '<div class="hack-a" id="hack-a">' +
+        '<h1>' + h.titulo + '</h1>' +
+        '<div class="sub">' + h.sub + '</div>' +
+        '<div class="bar"><i id="hack-bar"></i></div>' +
+        '<div class="pct" id="hack-pct">cifrando… 0%</div>' +
+        '<div class="sub" id="hack-cd" style="font-size:52px">00:00:03</div>' +
+      '</div>';
+
+    var bar = el("hack-bar");
+    var pct = el("hack-pct");
+    later(60, function () { bar.style.width = "63%"; });
+
+    var n = 0;
+    var tick = setInterval(function () {
+      n = Math.min(63, n + 7);
+      pct.textContent = "cifrando… " + n + "%";
+    }, 140);
+    state.hackTick = tick;
+
+    later(1000, function () { var cd = el("hack-cd"); if (cd) cd.textContent = "00:00:02"; });
+    later(2000, function () { var cd = el("hack-cd"); if (cd) cd.textContent = "00:00:01"; });
+    later(2900, function () { var cd = el("hack-cd"); if (cd) cd.textContent = "00:00:00"; });
+
+    later(3000, function () {
+      clearInterval(tick);
+      state.hackTick = null;
+      beep(140, 0.3, "sawtooth", 0.06);
+      scr.innerHTML =
+        '<div class="hack-b">' +
+          ICON.shield +
+          '<h1>TRANQUILO. ES UNA SIMULACIÓN.</h1>' +
+          '<p>Esto le pasa a miles de personas cada día.</p>' +
+        '</div>';
+    });
+
+    later(5000, function () {
+      var consejos = h.consejos.map(function (t, i) {
+        return '<div class="tip-card"><span class="n">' + (i + 1) + '</span><span>' + t + '</span></div>';
+      }).join("");
+      scr.innerHTML =
+        '<div class="hack-c">' +
+          '<h2>¿Qué acabas de ver?</h2>' +
+          '<p class="atk">' + h.ataque + '</p>' +
+          '<p class="intro">' + h.intro + '</p>' +
+          '<div class="tips">' + consejos + '</div>' +
+          '<div class="actions" style="justify-content:center;padding-top:10px">' +
+            '<button class="btn solid" id="btn-hack-next">SIGUIENTE ' + ICON.next + '</button>' +
+          '</div>' +
+        '</div>';
+      el("btn-hack-next").addEventListener("click", function () {
+        if (locked()) return;
+        showPrize();
+      });
+    });
+  }
+
+  /* ============================================================
+     PREMIO
+     ============================================================ */
+  function showPrize() {
+    if (state.mode === "prize") return;
+    clearLater();
+    stopTimer();
+    if (state.hackTick) { clearInterval(state.hackTick); state.hackTick = null; }
+    state.mode = "prize";
+    stage.classList.remove("hacked");
+
+    state.counters.p += 1;
+    if (state.lastCorrect) state.counters.a += 1;
+    guardaContador();
+    pintaContador();
+
+    var tip = TIPS[Math.floor(Math.random() * TIPS.length)];
+    el("prize-content").innerHTML =
+      '<div class="prize-icon">' + ICON.shield + '</div>' +
+      '<h2>¡LISTO! RECOGE TU PREMIO<br>Y TU TARJETA DE CONSEJOS</h2>' +
+      '<p class="sub">' + (state.lastCorrect ? "¡Premio extra por acertar!" : "") + '</p>' +
+      '<div class="tip"><span class="lbl2">Consejo del día</span>' + tip + '</div>' +
+      '<button class="btn solid" id="btn-again">VOLVER A GIRAR</button>';
+
+    showScreen("screen-prize");
+    beep(990, 0.16, "sine", 0.05);
+
+    el("btn-again").addEventListener("click", function () {
+      if (locked()) return;
+      resetAll();
+    });
+
+    later(9500, function () {
+      if (state.mode === "prize") resetAll();
+    });
+  }
+
+  /* ============================================================
+     REINICIO
+     ============================================================ */
+  function resetAll() {
+    clearLater();
+    stopTimer();
+    if (state.hackTick) { clearInterval(state.hackTick); state.hackTick = null; }
+    state.mode = "idle";
+    state.casilla = null;
+    state.reto = null;
+    state.vista = null;
+    state.result = null;
+    state.lastCorrect = null;
+    state.lastAction = Date.now();
+    reveal.classList.remove("show");
+    stage.classList.remove("hacked");
+    el("screen-hack").innerHTML = "";
+
+    wheel.style.transition = "none";
+    wheel.style.transform = "rotate(0deg)";
+    state.rot = 0;
+    // fuerza reflujo para que el siguiente giro sí anime
+    void wheel.offsetWidth;
+
+    showScreen("screen-wheel");
+    setLock(400);
+  }
+
+  /* ============================================================
+     CONTROLES DE OPERADOR
+     ============================================================ */
+  function toggleOperator() {
+    el("operator").classList.toggle("show");
+  }
+
+  function skipState() {
+    if (state.mode === "idle") { spin(); return; }
+    if (state.mode === "spinning" || state.mode === "reveal") {
+      reveal.classList.remove("show");
+      if (state.casilla === 5) startHack();
+      else startChallenge();
+      return;
+    }
+    if (state.mode === "challenge") { responder(false, true); return; }
+    if (state.mode === "result") { showPrize(); return; }
+    if (state.mode === "prize") { resetAll(); return; }
+    if (state.mode === "hack") { showPrize(); }
+  }
+
+  document.addEventListener("keydown", function (e) {
+    var k = e.key.toLowerCase();
+    if (k === "r" || e.key === "Escape") { resetAll(); e.preventDefault(); return; }
+    if (k === "m") {
+      state.sound = !state.sound;
+      beep(520, 0.1, "sine", 0.05);
+      return;
+    }
+    if (k === "n") { skipState(); return; }
+    if (k === "o") { toggleOperator(); return; }
+  });
+
+  el("op-reset").addEventListener("click", function () {
+    state.counters = { p: 0, a: 0 };
+    guardaContador();
+    pintaContador();
+  });
+
+  /* Bloqueo de menú contextual, selección y arrastre */
+  document.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+  document.addEventListener("dragstart", function (e) { e.preventDefault(); });
+
+  /* Ocultar el cursor tras 5 s sin movimiento */
+  var cursorTimer = null;
+  function despiertaCursor() {
+    document.body.classList.remove("nocursor");
+    clearTimeout(cursorTimer);
+    cursorTimer = setTimeout(function () {
+      document.body.classList.add("nocursor");
+    }, 5000);
+  }
+  document.addEventListener("mousemove", despiertaCursor);
+  document.addEventListener("mousedown", despiertaCursor);
+  despiertaCursor();
+
+  /* Inactividad: volver a S0 tras 45 s sin clics */
+  setInterval(function () {
+    if (state.mode !== "idle" && Date.now() - state.lastAction > 45000) {
+      resetAll();
+    }
+  }, 1000);
+
+  document.addEventListener("mousedown", function () { state.lastAction = Date.now(); });
+
+  /* Error fatal: mensaje y recarga */
+  window.addEventListener("error", function () {
+    var f = el("fatal");
+    if (f) {
+      f.classList.add("show");
+      setTimeout(function () { location.reload(); }, 3000);
+    }
+  });
+
+  /* ============================================================
+     ARRANQUE
+     ============================================================ */
+  function fit() {
+    var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    stage.style.transform = "translate(-50%,-50%) scale(" + s + ")";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  construyeRuleta();
+  cargaContador();
+  pintaContador();
+
+  el("hub").addEventListener("click", spin);
+  el("btn-spin").addEventListener("click", spin);
+
+  // El clic sobre la ruleta también gira
+  wheel.addEventListener("click", spin);
+})();
+</script>
+</body>
+</html>
