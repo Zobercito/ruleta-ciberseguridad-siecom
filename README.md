@@ -28,9 +28,9 @@ Cada una propone un ejercicio distinto, no la misma pregunta con otro texto:
 | ¿Qué harías? | Elige la acción segura ante una situación real | 3 situaciones |
 | ¡Hackeado! | Decide bajo presión en una pantalla de ataque simulada | 1 decisión |
 
-No hay cronómetro en las dinámicas de conocimiento: el visitante lee y decide a
-su ritmo. La única cuenta atrás es la de «¡Hackeado!» (8 s), porque ahí la prisa
-es justamente lo que se está enseñando.
+No hay cronómetro en ninguna dinámica: el visitante lee y decide a su ritmo.
+«¡Hackeado!» empieza con un aviso de «Has sido hackeado» y después plantea una
+decisión, también sin tiempo.
 
 Retos disponibles: 6 de «¿Real o fraude?», 4 de «Encuentra la alerta», 4 de
 «Contraseña fuerte», 6 de «¿Qué ataque es?», 7 de «¿Qué harías?» y 3 variantes
@@ -74,9 +74,9 @@ propósito:
 
 - **«Verdadero o falso»** se sustituyó por **«¿Qué harías?»**: las frases
   binarias se acertaban por azar y no hacían pensar.
-- **«¡Hackeado!»** ya no es una secuencia automática: ahora plantea una decisión
-  con ocho segundos y cuenta como acierto, en lugar de dejar al visitante
-  mirando diecisiete segundos sin hacer nada.
+- **«¡Hackeado!»** ya no es una secuencia automática: avisa con «Has sido
+  hackeado», plantea una decisión (sin tiempo) y cuenta como acierto, en lugar
+  de dejar al visitante mirando diecisiete segundos sin hacer nada.
 - **Sin cronómetro en las dinámicas de conocimiento**: el cronómetro castigaba a
   quien lee despacio y contradecía el mensaje del stand («piensa antes de hacer
   clic»). Solo se mantiene la cuenta atrás del ataque simulado.

@@ -156,21 +156,6 @@
   }
   .round-tag b{ color:var(--cyan); }
 
-  .timer{ margin-left:auto; display:flex; align-items:center; gap:20px; width:560px; }
-  .timer-bar{
-    flex:1 1 auto; height:18px; border-radius:10px; overflow:hidden;
-    background:rgba(255,255,255,.14);
-  }
-  .timer-fill{ height:100%; width:100%; border-radius:10px; background:var(--blue); }
-  .timer.warn .timer-fill{ background:var(--warn); }
-  .timer.danger .timer-fill{ background:var(--bad); }
-  .timer-num{
-    width:96px; text-align:right; font-size:48px; font-weight:700;
-    font-variant-numeric:tabular-nums;
-  }
-  .timer.warn .timer-num{ color:var(--warn); }
-  .timer.danger .timer-num{ color:var(--bad); }
-
   .ch-body{
     flex:1 1 auto; min-height:0;
     display:flex; flex-direction:column; justify-content:center; gap:28px;
@@ -554,10 +539,16 @@
     border-color:rgba(255,77,77,.85); background:rgba(255,77,77,.1);
   }
   .hack-actions .btn:hover{ background:rgba(255,77,77,.24); box-shadow:0 0 26px rgba(255,77,77,.45); }
-  .hack-a .timer{ width:820px; margin:4px 0 0; }
-  .hack-a .timer-bar{ background:rgba(255,77,77,.2); }
-  .hack-a .timer-fill{ background:var(--bad); }
-  .hack-a .timer-num{ color:#FF9C9C; }
+  .hack-intro{
+    flex:1 1 auto; display:flex; align-items:center; justify-content:center;
+    background:#0A0A0A; text-align:center; padding:0 60px;
+  }
+  .hack-intro h1{
+    margin:0; color:var(--bad);
+    font-family:Consolas, "Courier New", monospace;
+    font-size:132px; font-weight:800; letter-spacing:6px;
+    text-transform:uppercase; animation:blink .8s steps(1) infinite;
+  }
   .hack-c{ gap:18px; }
   .hack-c .banner{ width:100%; max-width:1560px; align-self:center; }
 
@@ -969,7 +960,7 @@
   var HACKS = [
     {
       titulo:"TUS ARCHIVOS HAN SIDO CIFRADOS",
-      sub:"Tienes 8 segundos antes de perderlo todo",
+      sub:"Piden un rescate para devolverlos.",
       pregunta:"¿Qué haces?",
       ataque:"Ransomware",
       intro:"Un programa malicioso cifra tus archivos y pide dinero para devolverlos.",
@@ -1038,13 +1029,9 @@
     lastReto: {},
     lastCasilla: -1,
     timers: [],
-    raf: 0,
-    timerOn: false,
-    timerRoot: null,
     hack: null,
     hackVista: null,
     hackElegido: -1,
-    hackTimeout: false,
     ronda: { total: 0, hechos: 0, aciertos: 0 },
     lock: 0,
     lastAction: Date.now(),
@@ -1239,51 +1226,6 @@
     var idx = state.decks[id].pop();
     state.lastReto[id] = idx;
     return idx;
-  }
-
-  /* ============================================================
-     CRONÓMETRO
-     ============================================================ */
-  function startTimer(segundos, onEnd, rootId) {
-    stopTimer();
-    var root = el(rootId || "timer");
-    if (!root) return;
-    var fill = root.querySelector(".timer-fill");
-    var num = root.querySelector(".timer-num");
-    if (!fill || !num) return;
-
-    var total = segundos * 1000;
-    var t0 = (window.performance ? performance.now() : Date.now());
-    var ultimo = -1;
-    state.timerOn = true;
-    state.timerRoot = root;
-
-    function step(now) {
-      if (!state.timerOn) return;
-      var left = Math.max(0, total - (now - t0));
-      fill.style.width = ((left / total) * 100) + "%";
-      var s = Math.ceil(left / 1000);
-      if (s !== ultimo) { num.textContent = s; ultimo = s; }
-      root.classList.toggle("warn", left <= 7000 && left > 3000);
-      root.classList.toggle("danger", left <= 3000);
-      if (left <= 0) {
-        state.timerOn = false;
-        onEnd();
-        return;
-      }
-      state.raf = requestAnimationFrame(step);
-    }
-    state.raf = requestAnimationFrame(step);
-  }
-
-  function stopTimer() {
-    state.timerOn = false;
-    if (state.raf) cancelAnimationFrame(state.raf);
-    state.raf = 0;
-    if (state.timerRoot) {
-      state.timerRoot.classList.remove("warn", "danger");
-      state.timerRoot = null;
-    }
   }
 
   /* ============================================================
@@ -1500,7 +1442,6 @@
   function responder(acierto) {
     if (locked()) return;
     if (state.mode !== "challenge") return;
-    stopTimer();
 
     state.mode = "result";
     state.lastCorrect = acierto;
@@ -1687,7 +1628,6 @@
     state.result = null;
     state.lastCorrect = null;
     state.hackElegido = -1;
-    state.hackTimeout = false;
     stage.classList.add("hacked");
 
     var h = HACKS[Math.floor(Math.random() * HACKS.length)];
@@ -1696,7 +1636,17 @@
       return { t: o.t, ok: !!o.ok, fallo: o.fallo || "" };
     }));
 
-    renderHackAlarma();
+    renderHackIntro();
+  }
+
+  function renderHackIntro() {
+    el("screen-hack").innerHTML =
+      '<div class="hack-intro"><h1>HAS SIDO HACKEADO</h1></div>';
+    showScreen("screen-hack");
+    setLock(300);
+    later(2000, function () {
+      if (state.mode === "hack") renderHackAlarma();
+    });
   }
 
   function renderHackAlarma() {
@@ -1712,37 +1662,28 @@
         '<div class="sub">' + h.sub + '</div>' +
         '<div class="pct" style="color:#FF9C9C;font-size:40px">' + h.pregunta + '</div>' +
         '<div class="hack-actions">' + botones + '</div>' +
-        '<div class="timer" id="hack-timer">' +
-          '<div class="timer-bar"><div class="timer-fill"></div></div>' +
-          '<div class="timer-num">8</div>' +
-        '</div>' +
       '</div>';
 
     var btns = scr.querySelectorAll("[data-h]");
     for (var i = 0; i < btns.length; i++) {
       btns[i].addEventListener("click", function () {
         var k = parseInt(this.getAttribute("data-h"), 10);
-        hackResponder(!!state.hackVista[k].ok, false, k);
+        hackResponder(!!state.hackVista[k].ok, k);
       });
     }
 
     showScreen("screen-hack");
-    setLock(300);
-    startTimer(8, function () {
-      if (state.mode === "hack") hackResponder(false, true, -1);
-    }, "hack-timer");
+    setLock(400);
   }
 
-  function hackResponder(ok, tiempoAgotado, elegido) {
+  function hackResponder(ok, elegido) {
     if (locked()) return;
     if (state.mode !== "hack") return;
-    stopTimer();
 
     state.mode = "hack-result";
     state.lastCorrect = ok;
     state.ronda = { total: 1, hechos: 1, aciertos: ok ? 1 : 0 };
     state.hackElegido = elegido;
-    state.hackTimeout = !!tiempoAgotado;
     if (ok) beep(880, 0.14, "sine", 0.06);
     else beep(170, 0.25, "triangle", 0.06);
 
@@ -1758,9 +1699,7 @@
 
     var banner = ok
       ? '<div class="banner ok">' + ICON.check + ' ¡Bien! No caíste</div>'
-      : (state.hackTimeout
-        ? '<div class="banner warn">' + ICON.clock + ' Se acabó el tiempo. Mira lo que pasaba:</div>'
-        : '<div class="banner bad">' + ICON.x + ' Caíste en la trampa</div>');
+      : '<div class="banner bad">' + ICON.x + ' Caíste en la trampa</div>';
 
     var fallo = "";
     if (!ok && elegido >= 0) {
@@ -1805,7 +1744,6 @@
   function showPrize() {
     if (state.mode === "prize") return;
     clearLater();
-    stopTimer();
     state.mode = "prize";
     stage.classList.remove("hacked");
 
@@ -1854,7 +1792,6 @@
      ============================================================ */
   function resetAll() {
     clearLater();
-    stopTimer();
     state.mode = "idle";
     state.casilla = null;
     state.reto = null;
@@ -1864,7 +1801,6 @@
     state.hack = null;
     state.hackVista = null;
     state.hackElegido = -1;
-    state.hackTimeout = false;
     state.ronda = { total: 0, hechos: 0, aciertos: 0 };
     state.lastAction = Date.now();
     reveal.classList.remove("show");
